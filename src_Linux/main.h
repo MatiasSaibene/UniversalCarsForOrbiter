@@ -37,85 +37,36 @@ const VECTOR3 FORWARD_DIRECTION = {0, 0, 1};
 
 const VECTOR3 BACKWARD_DIRECTION = {0, 0, -1};
 
+static const int ntdvtx = 12;
+
 class UCFO : public VESSEL4{
 
     public:
-
-        enum CarSounds {
-            engine_start,
-            engine_run,
-            horn
-        };
 
         UCFO(OBJHANDLE hVessel, int flightmodel);
 
         virtual ~UCFO();
 
         void TerminateAtError(const char *error, const char * className, const char *type);
-        void NotifyInLog(const char *error, const char *className, const char *type);
-
-        void DefineAnimations(void);
-
-        double UpdateLvlWheelsTrails(void);
-
-
-        /* void NextSkin(void);
-        void ChangeSkin(void);
-        void ApplySkin(void); */
-
-        void Caster();
-        void Ackermann();
-        void Brakes();
-        void EnginePower();
-        void SetContactTouchdownPoints();
-        
-        VECTOR3 RotatePitch(VECTOR3, double);
-        VECTOR3 RotateYaw(VECTOR3, double);
-        VECTOR3 RotateBank(VECTOR3, double);
-        VECTOR3 Rotate(VECTOR3, double, double, double);
-        void NormalForce();
-        void WheelAxis();
-        void WheelVelocity(VECTOR3, VECTOR3);
-        void DynamicFriction();
-        void StaticFriction();
-        void StickOrSkid();
-
-        void AnimRightFrontWheel();
-        void AnimLeftFrontWheel();
-        void AnimRightRearWheel();
-        void AnimLeftRearWheel();
-
-        void MakeLightsHeadlights();
-        void MakeLightsTaillights();
-        void MakeLightsBackuplights();
-        void SetLightHeadlights();
-        void SetLightBrakelights();
-        void SetLightBackuplights();
-
-        void SetAnnotationMessages();
-        void MakeAnnotationFormat();
-
 
         void clbkSetClassCaps(FILEHANDLE cfg) override;
         void clbkLoadStateEx(FILEHANDLE scn, void *vs) override;
-        void clbkSaveState(FILEHANDLE scn) override;
-        //void clbkPreStep(double, double, double) override;
         void clbkPostCreation() override;
-        void clbkPreStep(double, double, double) override;
-        void clbkPostStep(double, double, double) override;
-        int clbkConsumeBufferedKey(int, bool, char *) override;
-        int clbkConsumeDirectKey(char *) override;
+        void clbkPreStep(double simt, double simdt, double mjd) override;
+        void clbkPostStep(double simt, double simdt, double mjd) override;
+        int clbkConsumeBufferedKey(int key, bool down, char *kstate) override;
+        int clbkConsumeDirectKey(char *kstate) override;
+
+        void EnginePower();
+        void Brakes();
+        void SetContactTouchdownPoints();
 
 
-        /* bool clbkLoadVC(int) override;
+        double UpdateLvlWheelsTrails();
 
-
-        void clbkVisualCreated(VISHANDLE vis, int refcount) override;
-        void clbkVisualDestroyed (VISHANDLE vis, int refcount) override; */
-        
         VISHANDLE vhUCFO;
         MESHHANDLE mhUCFO, mhcockpitUCFO;
-        DEVMESHHANDLE dmhUCFO;
+        unsigned int uimesh_UCFO;
         unsigned int uimesh_Cockpit = 1;
 
     private:
