@@ -9,8 +9,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdlib>
-#include <limits>
-#include <string>
 #define ORBITER_MODULE
 #include "main.h"
 
@@ -278,8 +276,12 @@ void UCFO::clbkPostCreation(){
 	GetWeightVector(max_weight_vector);
     max_weight = length(max_weight_vector);
 
-    max_weight_front = max_weight * (-rear_right_wheel_contact.z / wheel_base); //Weight supported by two front wheells.
-    max_weight_rear = (max_weight - max_weight_front); //Weight supported by two rear wheels.
+	max_weight_front = (max_weight / 2);
+
+	max_weight_rear = (max_weight / 2);
+
+    /* max_weight_front = max_weight * (-rear_right_wheel_contact.z / wheel_base); //Weight supported by two front wheells.
+    max_weight_rear = (max_weight - max_weight_front); //Weight supported by two rear wheels. */
 
     SetContactTouchdownPoints();
 
