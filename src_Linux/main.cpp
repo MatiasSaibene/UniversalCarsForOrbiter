@@ -627,6 +627,11 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
 	DefineAnimations();
 
+    //Light locations and specifications
+    MakeLightHeadlights();
+    MakeLightBackuplights();
+    MakeLightTaillights();
+
     //Screen message formatting
     MakeAnnotationFormat();
 
@@ -692,10 +697,10 @@ void UCFO::clbkPreStep(double simt, double simdt, double mjd){
     AnimRightRearWheel();
     AnimLeftRearWheel();
 
-    /* SetLightHeadlights();
+    SetLightHeadlights();
     SetLightBrakelights();
     SetLightBackuplights();
- */
+
     SetAnnotationMessages();
 
 }
@@ -1426,6 +1431,178 @@ double UCFO::UpdateLvlWheelsTrails(){
 
 }
 
+void UCFO::SetLightHeadlights(){
+
+    if(headlight_status == 'N'){
+
+        left_headlight->Activate(true);
+
+        right_headlight->Activate(true);
+
+
+        left_headlight_beacon_spec.active = true;
+
+        right_headlight_beacon_spec.active = true;
+
+    } else {
+
+        left_headlight->Activate(false);
+
+        right_headlight->Activate(false);
+
+
+        left_headlight_beacon_spec.active = false;
+
+        right_headlight_beacon_spec.active = false;
+
+    }
+
+}
+
+void UCFO::SetLightBrakelights(){
+
+    if(brake_status == 'N'){
+
+        left_tail_light_point->Activate(true);
+
+        right_tail_light_point->Activate(true);
+
+
+        left_tail_light_spec.active = true;
+
+        right_tail_light_spec.active = true;
+
+    } else {
+
+        left_tail_light_point->Activate(false);
+
+        right_tail_light_point->Activate(false);
+
+
+        left_tail_light_spec.active = false;
+
+        right_tail_light_spec.active = false;
+        
+    }
+
+}
+
+void UCFO::SetLightBackuplights(){
+
+    if(drive_status == 'R'){
+
+        left_backup_light_point->Activate(true);
+
+        right_backup_light_point->Activate(true);
+
+
+        left_backup_light_spec.active = true;
+
+        right_backup_light_spec.active = true;
+
+    } else {
+
+        left_backup_light_point->Activate(false);
+
+        right_backup_light_point->Activate(false);
+
+
+        left_backup_light_spec.active = false;
+
+        right_backup_light_spec.active = false;
+        
+    }
+
+}
+
+void UCFO::MakeLightHeadlights(){
+
+    headlight_status = 'F';
+
+    left_headlight_beacon_spec.pos = &left_headlight_pos;
+    left_headlight_beacon_spec.shape = BEACONSHAPE_STAR;
+    left_headlight_beacon_spec.col = &col_white;
+    left_headlight_beacon_spec.size = 0.18;
+    left_headlight_beacon_spec.falloff = 0.6;
+    left_headlight_beacon_spec.period = 0;
+    left_headlight_beacon_spec.duration = 0.05;
+    left_headlight_beacon_spec.tofs = 0.6;
+    left_headlight_beacon_spec.active = false;
+
+    right_headlight_beacon_spec.pos = &right_headlight_pos;
+    right_headlight_beacon_spec.shape = BEACONSHAPE_STAR;
+    right_headlight_beacon_spec.col = &col_white;
+    right_headlight_beacon_spec.size = 0.18;
+    right_headlight_beacon_spec.falloff = 0.6;
+    right_headlight_beacon_spec.period = 0;
+    right_headlight_beacon_spec.duration = 0.05;
+    right_headlight_beacon_spec.tofs = 0.6;
+    right_headlight_beacon_spec.active = false;
+
+    left_headlight = AddSpotLight(left_headlight_pos, FORWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
+
+    right_headlight = AddSpotLight(right_headlight_pos, FORWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
+
+}
+
+void UCFO::MakeLightTaillights(){
+
+    brake_status = 'F';
+
+    left_tail_light_spec.pos = &left_tail_light_pos;
+    left_tail_light_spec.shape = BEACONSHAPE_COMPACT;
+    left_tail_light_spec.col = &col_red;
+    left_tail_light_spec.size = 0.18;
+    left_tail_light_spec.falloff = 0.6;
+    left_tail_light_spec.period = 0;
+    left_tail_light_spec.duration = 0.05;
+    left_tail_light_spec.tofs = 0.6;
+    left_tail_light_spec.active = false;
+
+    right_tail_light_spec.pos = &right_tail_light_pos;
+    right_tail_light_spec.shape = BEACONSHAPE_COMPACT;
+    right_tail_light_spec.col = &col_red;
+    right_tail_light_spec.size = 0.18;
+    right_tail_light_spec.falloff = 0.6;
+    right_tail_light_spec.period = 0;
+    right_tail_light_spec.duration = 0.05;
+    right_tail_light_spec.tofs = 0.6;
+    right_tail_light_spec.active = false;
+
+    left_tail_light_point = AddSpotLight(left_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_red_d, col_red_s, col_red_a);
+
+    right_tail_light_point = AddSpotLight(right_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_red_d, col_red_s, col_red_a);
+
+}
+
+void UCFO::MakeLightBackuplights(){
+
+    left_backup_light_spec.pos = &left_tail_light_pos;
+    left_backup_light_spec.shape = BEACONSHAPE_COMPACT;
+    left_backup_light_spec.col = &col_white;
+    left_backup_light_spec.size = 0.18;
+    left_backup_light_spec.falloff = 0.6;
+    left_backup_light_spec.period = 0;
+    left_backup_light_spec.duration = 0.05;
+    left_backup_light_spec.tofs = 0.6;
+    left_backup_light_spec.active = false;
+
+    right_backup_light_spec.pos = &right_tail_light_pos;
+    right_backup_light_spec.shape = BEACONSHAPE_COMPACT;
+    right_backup_light_spec.col = &col_white;
+    right_backup_light_spec.size = 0.18;
+    right_backup_light_spec.falloff = 0.6;
+    right_backup_light_spec.period = 0;
+    right_backup_light_spec.duration = 0.05;
+    right_backup_light_spec.tofs = 0.6;
+    right_backup_light_spec.active = false;
+
+    left_backup_light_point = AddSpotLight(left_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
+
+    right_backup_light_point = AddSpotLight(right_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
+
+}
+
 int UCFO::clbkConsumeBufferedKey(int key, bool down, char *kstate){
 
     if(key == OAPI_KEY_PERIOD && down){
@@ -1463,6 +1640,17 @@ int UCFO::clbkConsumeBufferedKey(int key, bool down, char *kstate){
 
     }
 
+    if(key == OAPI_KEY_L && down){
+
+        if(headlight_status == 'N'){
+
+            headlight_status = 'F';
+        } else if (headlight_status == 'F'){
+
+            headlight_status = 'N';
+        }
+        
+    }
 
     return 0;
 }

@@ -85,6 +85,13 @@ class UCFO : public VESSEL4{
 
         double UpdateLvlWheelsTrails();
 
+        void MakeLightHeadlights();
+        void MakeLightTaillights();
+        void MakeLightBackuplights();
+        void SetLightHeadlights();
+        void SetLightBrakelights();
+        void SetLightBackuplights();
+
         VISHANDLE vhUCFO;
         MESHHANDLE mhUCFO, mhcockpitUCFO;
         unsigned int uimesh_UCFO;
@@ -149,7 +156,7 @@ class UCFO : public VESSEL4{
         BEACONLIGHTSPEC left_headlight_beacon_spec, right_headlight_beacon_spec, right_tail_light_spec, left_tail_light_spec, left_turning_wheel, right_turning_wheel, beacon, stop_light, left_backup_light_spec, right_backup_light_spec;
         SURFHANDLE skin[1];
         char skinpath[256];
-        LightEmitter *left_headlight, *right_headlight, *left_tail_light_point, *right_tail_light_point;
+        LightEmitter *left_headlight, *right_headlight, *left_tail_light_point, *right_tail_light_point, *left_backup_light_point, *right_backup_light_point;
         COLOUR4 col_white_d = {0.9,0.8,1,0};
 	    COLOUR4 col_white_s = {1.9,0.8,1,0};
 	    COLOUR4 col_white_a = {0,0,0,0};
