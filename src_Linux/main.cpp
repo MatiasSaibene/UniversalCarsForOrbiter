@@ -432,7 +432,7 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 		TerminateAtError("Mesh", GetName(), "car");
 	}
 
-	SetMeshVisibilityMode (AddMesh (mhUCFO = oapiLoadMeshGlobal (MeshName)), MESHVIS_EXTERNAL);
+	SetMeshVisibilityMode (AddMesh (mhUCFO = oapiLoadMeshGlobal (MeshName)), MESHVIS_ALWAYS);
 
 
 	if(!oapiReadItem_float(cfg, "Size", size)){
@@ -1650,6 +1650,20 @@ int UCFO::clbkConsumeBufferedKey(int key, bool down, char *kstate){
             headlight_status = 'N';
         }
         
+    }
+
+    if(key == OAPI_KEY_F && down){
+
+        SetCameraOffset(camera_pos);
+
+    }
+
+    if(key == OAPI_KEY_V && down){
+
+        VECTOR3 front_left_wheel_pos_aux = _V(front_left_wheel_pos.x-1.75, front_left_wheel_pos.y, front_left_wheel_pos.z-2.75);
+
+        SetCameraOffset(front_left_wheel_pos_aux);
+
     }
 
     return 0;
