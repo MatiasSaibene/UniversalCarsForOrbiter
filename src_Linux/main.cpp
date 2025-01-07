@@ -126,10 +126,6 @@ VESSEL4(hVessel, flightmodel){
 
 	wheel_track = 0.0;
 
-	wheel_base = front_right_wheel_contact.z - rear_right_wheel_contact.x;
-
-    wheel_track = front_right_wheel_contact.x - front_left_wheel_contact.x;
-
     rear_right_wheel_contact = _V(0, 0, 0);
     
     rear_left_wheel_contact = _V(0, 0, 0);
@@ -137,7 +133,12 @@ VESSEL4(hVessel, flightmodel){
     front_right_wheel_contact = _V(0, 0, 0);
     
     front_left_wheel_contact = _V(0, 0, 0);
-	front_stiffness = 0.0;
+    
+	wheel_base = front_right_wheel_contact.z - rear_right_wheel_contact.x;
+
+    wheel_track = front_right_wheel_contact.x - front_left_wheel_contact.x;
+
+    front_stiffness = 0.0;
 
 	front_damping = 0.0;
 
@@ -262,6 +263,88 @@ VESSEL4(hVessel, flightmodel){
     rear_left_axle_axis = _V(0, 0, 0);
 
     rear_right_axle_axis = _V(0, 0, 0);
+
+    left_headlight_beacon_spec = {
+        0,
+        nullptr,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        false
+    };
+
+    right_headlight_beacon_spec = {
+        0,
+        nullptr,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        false
+    };
+
+    left_tail_light_spec = {
+        0,
+        nullptr,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        false
+    };
+
+    right_tail_light_spec = {
+        0,
+        nullptr,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        false
+    };
+
+    left_backup_light_spec = {
+        0,
+        nullptr,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        false
+    };
+
+    right_backup_light_spec = {
+        0,
+        nullptr,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        false
+    };
+
+    left_headlight = nullptr;
+
+    right_headlight = nullptr;
+
+    left_tail_light_point = nullptr;
+
+    right_tail_light_point = nullptr;
+
+    left_backup_light_point = nullptr;
+
+    right_backup_light_point = nullptr;
+
+    headlight_status = '\0';
+
+    Fuel = nullptr;
 
 }
 
@@ -1569,9 +1652,9 @@ void UCFO::MakeLightTaillights(){
     right_tail_light_spec.tofs = 0.6;
     right_tail_light_spec.active = false;
 
-    left_tail_light_point = AddSpotLight(left_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_red_d, col_red_s, col_red_a);
+    left_tail_light_point = AddSpotLight(left_tail_light_pos, BACKWARD_DIRECTION, 0.5, 1e-1, 0, 2e-1, 25*RAD, 45*RAD, col_red_d, col_red_s, col_red_a);
 
-    right_tail_light_point = AddSpotLight(right_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_red_d, col_red_s, col_red_a);
+    right_tail_light_point = AddSpotLight(right_tail_light_pos, BACKWARD_DIRECTION, 0.5, 1e-1, 0, 2e-1, 25*RAD, 45*RAD, col_red_d, col_red_s, col_red_a);
 
 }
 
@@ -1597,9 +1680,9 @@ void UCFO::MakeLightBackuplights(){
     right_backup_light_spec.tofs = 0.6;
     right_backup_light_spec.active = false;
 
-    left_backup_light_point = AddSpotLight(left_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
+    left_backup_light_point = AddSpotLight(left_tail_light_pos, BACKWARD_DIRECTION, 0.5, 1e-1, 0, 2e-1, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
 
-    right_backup_light_point = AddSpotLight(right_tail_light_pos, BACKWARD_DIRECTION, 300, 1e-3, 0, 2e-3, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
+    right_backup_light_point = AddSpotLight(right_tail_light_pos, BACKWARD_DIRECTION, 0.5, 1e-1, 0, 2e-1, 25*RAD, 45*RAD, col_white_d, col_white_s, col_white_a);
 
 }
 
