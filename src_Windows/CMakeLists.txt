@@ -1,6 +1,6 @@
 set(CMAKE_CXX_STANDARD 20)
 cmake_minimum_required(VERSION 3.16)
-project(UCFO_for_Windows)
+project(UCFO)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -48,7 +48,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # Enlazar con todas las bibliotecas encontradas en el directorio
-target_link_libraries(UCFO_for_Windows ${LIBRARIES})
+target_link_libraries(UCFO ${LIBRARIES})
 
 # Opciones de compilación
 #add_compile_options(-fPICg)

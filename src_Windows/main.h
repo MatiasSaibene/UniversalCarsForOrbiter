@@ -1,13 +1,11 @@
-/////////////////////////////////////////////////////
-//          Copyright (c)2024 Matías Saibene       //
-//ORBITER MODULE: UNIVERSAL CARS FOR ORBITER (UCFO)//
-//          Licenced under the MIT Licence         //
-//              main.h  Main header file           //
-/////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+//Copyright (c)2024 Thunder Chicken & Matías Saibene //
+//ORBITER MODULE: UNIVERSAL CARS FOR ORBITER (UCFO)  //
+//          Licenced under the MIT Licence           //
+//              main.h  Main header file             //
+///////////////////////////////////////////////////////
 #pragma once
-#ifndef NOMINMAX
 #define NOMINMAX
-#endif
 #ifndef __MAIN_H
 #define __MAIN_H
 
@@ -15,19 +13,12 @@
 
 #include <cmath>
 #include <cstddef>
-#include <exception>
 #include <sys/types.h>
 #include <cstring>
 #include <cstdio>
-#include <cstdint>
-#include <limits>
 
-#include "HEADERS//Orbitersdk.h"
 #include "HEADERS//OrbiterAPI.h"
-#include "HEADERS//ModuleAPI.h"
 #include "HEADERS//VesselAPI.h"
-#include "HEADERS//XRSound.h"
-#include "HEADERS//GraphicsAPI.h"
 
 const double UCFO_ISP = 2e4;
 
@@ -51,20 +42,49 @@ class UCFO : public VESSEL4{
 
         void TerminateAtError(const char *error, const char * className, const char *type);
 
+        void DefineAnimations();
         void clbkSetClassCaps(FILEHANDLE cfg) override;
         void clbkLoadStateEx(FILEHANDLE scn, void *vs) override;
         void clbkPostCreation() override;
         void clbkPreStep(double simt, double simdt, double mjd) override;
         void clbkPostStep(double simt, double simdt, double mjd) override;
-        int clbkConsumeBufferedKey(DWORD key, bool down, char *kstate)override;
+        int clbkConsumeBufferedKey(DWORD key, bool down, char *kstate) override;
         int clbkConsumeDirectKey(char *kstate) override;
+        void clbkSaveState(FILEHANDLE scn) override;
 
+        VECTOR3 RotatePitch(VECTOR3, double);
+        VECTOR3 RotateYaw(VECTOR3, double);
+        VECTOR3 RotateBank(VECTOR3, double);
+        VECTOR3 Rotate(VECTOR3, double, double, double);
+        void NormalForce(double pitch, double yaw, double bank);
+        void WheelAxis();
+        void WheelVelocity(VECTOR3, VECTOR3);
+        void DynamicFriction();
+        void StaticFriction();
+        void StickOrSkid();
+        void Caster();
+        void Ackermann();
         void EnginePower();
         void Brakes();
         void SetContactTouchdownPoints();
+        
+        
+        void SetAnnotationMessages();
+        void MakeAnnotationFormat();
 
+        void AnimRightFrontWheel();
+        void AnimLeftFrontWheel();
+        void AnimRightRearWheel();
+        void AnimLeftRearWheel();
 
         double UpdateLvlWheelsTrails();
+
+        void MakeLightHeadlights();
+        void MakeLightTaillights();
+        void MakeLightBackuplights();
+        void SetLightHeadlights();
+        void SetLightBrakelights();
+        void SetLightBackuplights();
 
         VISHANDLE vhUCFO;
         MESHHANDLE mhUCFO, mhcockpitUCFO;
@@ -102,18 +122,7 @@ class UCFO : public VESSEL4{
         VECTOR3 TDP7;
         VECTOR3 TDP8;
 
-        NOTEHANDLE hNote = NULL;
-        oapi::ScreenAnnotation *msg1_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg2_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg3_annotation =   (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg4_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg5_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg6_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg7_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg8_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg9_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg10_annotation = (oapi::ScreenAnnotation *) hNote;
-        oapi::ScreenAnnotation *msg11_annotation = (oapi::ScreenAnnotation *) hNote;
+        NOTEHANDLE msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10, msg11;
         
         const char *cockpit_meshname = NULL;
 
@@ -138,10 +147,13 @@ class UCFO : public VESSEL4{
 
         THRUSTER_HANDLE th_dummy;
         THGROUP_HANDLE thg_dummy;
-        BEACONLIGHTSPEC left_headlight_beacon_spec, right_headlight_beacon_spec, right_tail_light_spec, left_tail_light_spec, left_turning_wheel, right_turning_wheel, beacon, stop_light, left_backup_light_spec, right_backup_light_spec;
-        SURFHANDLE skin[1];
-        char skinpath[256];
-        LightEmitter *left_headlight, *right_headlight, *left_tail_light_point, *right_tail_light_point;
+        BEACONLIGHTSPEC left_headlight_beacon_spec, right_headlight_beacon_spec, right_tail_light_spec, left_tail_light_spec, left_backup_light_spec, right_backup_light_spec;
+        ANIMATIONCOMPONENT_HANDLE flw_parent1, flw_parent2, frw_parent1, frw_parent2, rrw_parent1, rlw_parent1;
+        MGROUP_ROTATE *left_front_wheel_steer, *left_front_wheel_rotate, *right_front_wheel_steer, *right_front_wheel_rotate,*right_rear_wheel_rotate, *left_rear_wheel_rotate;
+        MGROUP_TRANSLATE *left_front_wheel_travel, *right_front_wheel_travel, *right_rear_wheel_travel, *left_rear_wheel_travel; 
+        //SURFHANDLE skin[1];
+        //char skinpath[256];
+        LightEmitter *left_headlight, *right_headlight, *left_tail_light_point, *right_tail_light_point, *left_backup_light_point, *right_backup_light_point;
         COLOUR4 col_white_d = {0.9,0.8,1,0};
 	    COLOUR4 col_white_s = {1.9,0.8,1,0};
 	    COLOUR4 col_white_a = {0,0,0,0};
@@ -150,9 +162,6 @@ class UCFO : public VESSEL4{
         COLOUR4 col_red_a = {1, 0, 0, 1};
         VECTOR3 col_white = {1, 1, 1};
         VECTOR3 col_red = {1.0, 0.0, 0.0};
-
-        int * sa;
-
 
         double steering_angle;
         double R;
@@ -169,8 +178,7 @@ class UCFO : public VESSEL4{
         double wheel_radius = 0.322;
         double main_fuel_tank_max;
         char drive_status;
-        double pitch;
-        double yaw, bank;
+        double pitch, yaw, bank;
         VECTOR3 omega;
         double x, z;
         VECTOR3 y;
@@ -183,7 +191,7 @@ class UCFO : public VESSEL4{
         double front_stiffness, rear_stiffness, body_stiffness;
         double front_damping, rear_damping, body_damping;
         double travel = 0.06;
-        double front_left_tilt_angle,rear_right_tilt_angle, rear_left_tilt_angle;
+        double front_left_tilt_angle, front_right_tilt_angle, rear_right_tilt_angle, rear_left_tilt_angle;
         double front_right_displacement, front_left_displacement, rear_right_displacement, rear_left_displacement;
         double front_right_wheel_force, front_left_wheel_force, rear_right_wheel_force, rear_left_wheel_force;
         VECTOR3 front_right_axle_axis, front_left_axle_axis, rear_right_axle_axis, rear_left_axle_axis;
