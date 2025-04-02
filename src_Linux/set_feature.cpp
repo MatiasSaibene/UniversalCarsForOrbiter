@@ -18,7 +18,7 @@ void UCFO::SetFeature_Caster(){
 
 void UCFO::SetFeature_Ackermann(){
 
-    double R = wheel_base / sin(steering_angle);
+    double R = std::max(wheel_base / sin(steering_angle), 1.5); // Asegura un radio mínimo
 
     if(steering_angle > 0){
 
@@ -39,7 +39,6 @@ void UCFO::SetFeature_Ackermann(){
          angle_right = 0;
          angle_left = 0;
          turn_radius = INFINITY;
-
     }
 }
 

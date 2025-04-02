@@ -228,6 +228,10 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
     SetCameraOffset(_V(-0.25, 1.0, 0.0));
 
     MakeContact_TouchdownPoints();
+    oapiWriteLogV("front_right_wheel_contact: %f, %f, %f",
+        front_right_wheel_contact.x,
+        front_right_wheel_contact.y,
+        front_right_wheel_contact.z);
 
     //Screen message formatting
     MakeAnnotation_Format();
@@ -312,13 +316,13 @@ int UCFO::clbkConsumeDirectKey(char *kstate){
 
     if(KEYDOWN(kstate, OAPI_KEY_NUMPAD1)){
 
-        steering_angle = std::max(steering_angle - 0.05 * RAD, -1.0);
+        steering_angle = std::max(steering_angle - 5 * RAD, -1.0);
 
     }
 
     if(KEYDOWN(kstate, OAPI_KEY_NUMPAD3)){
         
-        steering_angle = std::min(steering_angle + 0.05 * RAD, 1.0);
+        steering_angle = std::min(steering_angle + 5 * RAD, 1.0);
         
     }
 

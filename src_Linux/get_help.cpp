@@ -113,11 +113,11 @@ void UCFO::GetHelp_NormalForce(){
 
     //Determine location of vehicle contact points in rotated vessel frame
 
-    front_right_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
+    front_right_wheel_contact_local = GetHelp_Rotate(front_right_wheel_contact, pitch, yaw, bank);
     front_left_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
 
-    rear_right_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
-    rear_left_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
+    rear_right_wheel_contact_local = GetHelp_Rotate(rear_right_wheel_contact, pitch, yaw, bank);
+    rear_left_wheel_contact_local = GetHelp_Rotate(rear_left_wheel_contact, pitch, yaw, bank);
 
     //Determine angle between rotated and local contact points
     /* front_right_tilt_angle = (front_right_wheel_contact_local.y / std::abs(front_right_wheel_contact_local.y)) * std::acos(dotp(front_right_wheel_contact, front_right_wheel_contact_local) / length(front_right_wheel_contact) * length(front_right_wheel_contact_local)); */
