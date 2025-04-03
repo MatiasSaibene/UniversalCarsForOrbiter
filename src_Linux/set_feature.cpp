@@ -1,6 +1,24 @@
 #include "main.hpp"
 #include <cmath>
 
+double UCFO::UpdateLvlWheelsTrails(){
+
+    double speed = 0.0;
+    speed = GetGroundspeed();
+
+
+    if((speed > 10.0) && (GroundContact())){
+
+        return 1.0;
+
+    } else {
+
+        return 0.0;
+
+    }
+
+}
+
 void UCFO::SetFeature_Caster(){
     
     //Slowly returns steering angle to zero when no steering inputs applied

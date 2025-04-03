@@ -7,8 +7,12 @@
 #include <sys/types.h>
 #include <cstring>
 #include <cstdio>
-
 #include "HEADERS//Orbitersdk.h"
+
+const VECTOR3 FORWARD_DIRECTION = {0, 0, 1};
+
+const VECTOR3 BACKWARD_DIRECTION = {0, 0, -1};
+
 
 class UCFO : public VESSEL4{
 
@@ -41,6 +45,14 @@ class UCFO : public VESSEL4{
         void MakeAnnotation_Format();
         void SetAnnotation_Messages();
 
+        double UpdateLvlWheelsTrails();
+
+        void MakeLightHeadlights();
+        void MakeLightTaillights();
+        void MakeLightBackuplights();
+        void SetLightHeadlights();
+        void SetLightBrakelights();
+        void SetLightBackuplights();
 
         void MakeAnim_RightFrontWheel();
         void MakeAnim_LeftFrontWheel();
@@ -238,6 +250,22 @@ class UCFO : public VESSEL4{
         MGROUP_ROTATE* left_rear_wheel_rotate;
         MGROUP_TRANSLATE* right_rear_wheel_travel;  
         MGROUP_ROTATE* right_rear_wheel_rotate;
+
+        char headlight_status;
+        double lvlwheeltrails;
+        VECTOR3 left_headlight_pos, right_headlight_pos, left_tail_light_pos, right_tail_light_pos;
+        VECTOR3 left_backup_pos;
+        VECTOR3 right_backup_pos;
+        BEACONLIGHTSPEC left_headlight_beacon_spec, right_headlight_beacon_spec, right_tail_light_spec, left_tail_light_spec, left_backup_light_spec, right_backup_light_spec;
+        LightEmitter *left_headlight, *right_headlight, *left_tail_light_point, *right_tail_light_point, *left_backup_light_point, *right_backup_light_point;
+        COLOUR4 col_white_d = {0.9,0.8,1,0};
+	    COLOUR4 col_white_s = {1.9,0.8,1,0};
+	    COLOUR4 col_white_a = {0,0,0,0};
+        COLOUR4 col_red_d = {1, 0, 0, 1};
+        COLOUR4 col_red_s = {1, 0, 0, 1};
+        COLOUR4 col_red_a = {1, 0, 0, 1};
+        VECTOR3 col_white = {1, 1, 1};
+        VECTOR3 col_red = {1.0, 0.0, 0.0};
 
 
         //Variables to make UniversalCars more "universal"

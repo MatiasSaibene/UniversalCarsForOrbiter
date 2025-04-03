@@ -21,7 +21,8 @@ set(SOURCE_FILES
     get_help.cpp
     make_anim.cpp
     make_annotation.cpp
-    #make_light.cpp
+    make_light.cpp
+    set_light.cpp
     set_engine.cpp
     set_feature.cpp
     set_contact.cpp

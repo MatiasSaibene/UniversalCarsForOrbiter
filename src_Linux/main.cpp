@@ -257,6 +257,34 @@ UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
     right_rear_wheel_travel = nullptr;
 
     right_rear_wheel_rotate = nullptr;
+
+    headlight_status = '\0';
+
+    lvlwheeltrails = 0.0;
+
+    left_headlight_beacon_spec = {0};
+
+    right_headlight_beacon_spec = {0};
+
+    right_tail_light_spec = {0};
+
+    left_tail_light_spec = {0};
+
+    left_backup_light_spec = {0};
+
+    right_backup_light_spec = {0};
+
+    left_headlight = nullptr;
+
+    right_headlight = nullptr;
+
+    left_tail_light_point = nullptr;
+
+    right_tail_light_point = nullptr;
+
+    left_backup_light_point = nullptr;
+
+    right_backup_light_point = nullptr;
 }
 
 //Destructor
@@ -320,6 +348,29 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
         TerminateAtError("Travel", GetName(), "car");
     }
 
+    if(!oapiReadItem_vec(cfg, "LeftHeadlightPosition", left_headlight_pos)){
+		TerminateAtError("LeftHeadlightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "RightHeadlightPosition", right_headlight_pos)){
+		TerminateAtError("RightHeadlightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "LeftTailLightPosition", left_tail_light_pos)){
+		TerminateAtError("LeftTailLightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "RightTailLightPosition", right_tail_light_pos)){
+		TerminateAtError("RightTailLightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "LeftBackupLightPosition", left_backup_pos)){
+		TerminateAtError("LeftBackupLightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "RightBackupLightPosition", right_backup_pos)){
+		TerminateAtError("RightBackupLightPosition", GetName(), "car");
+	}
 
     if (!front_left_wheel_id) { 
         front_left_wheel_id = new int; // Asignamos memoria si es necesario
@@ -465,6 +516,25 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
     MakeAnim_RightRearWheel();
     MakeAnim_LeftRearWheel();
 
+    MakeLightHeadlights();
+    MakeLightBackuplights();
+    MakeLightTaillights();
+
+    static PARTICLESTREAMSPEC wheel_trails = {
+        0, 0.5, 5, 10, 0.03, 5, 1, 3.0, 
+        PARTICLESTREAMSPEC::EMISSIVE,
+		PARTICLESTREAMSPEC::LVL_PLIN, -1.0, 25.0,
+		PARTICLESTREAMSPEC::ATM_PLIN, 
+    };
+
+	AddParticleStream(&wheel_trails, front_left_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
+
+    AddParticleStream(&wheel_trails, front_right_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
+
+    AddParticleStream(&wheel_trails, rear_left_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
+
+    AddParticleStream(&wheel_trails, rear_right_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
+
 }
 
 void UCFO::clbkPostCreation(){
@@ -535,6 +605,11 @@ void UCFO::clbkPreStep(double simt, double simdt, double mjd){
     SetAnim_RightRearWheel();
     SetAnim_LeftRearWheel();
 
+    lvlwheeltrails = UpdateLvlWheelsTrails();
+
+    SetLightHeadlights();
+    SetLightBrakelights();
+    SetLightBackuplights();
 
 }
 
@@ -597,6 +672,32 @@ int UCFO::clbkConsumeBufferedKey(int key, bool down, char *kstate){
             drive_status = 'F';
 
         }
+
+    }
+
+    if(key == OAPI_KEY_L && down){
+
+        if(headlight_status == 'N'){
+
+            headlight_status = 'F';
+        } else if (headlight_status == 'F'){
+
+            headlight_status = 'N';
+        }
+        
+    }
+
+    if(key == OAPI_KEY_F && down){
+
+        SetCameraOffset(camera_pos);
+
+    }
+
+    if(key == OAPI_KEY_V && down){
+
+        VECTOR3 front_left_wheel_pos_aux = _V(front_left_wheel_pos.x-1.75, front_left_wheel_pos.y, front_left_wheel_pos.z-2.75);
+
+        SetCameraOffset(front_left_wheel_pos_aux);
 
     }
 
