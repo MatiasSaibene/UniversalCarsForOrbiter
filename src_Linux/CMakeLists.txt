@@ -19,14 +19,14 @@ file(GLOB LIBRARIES "${ORBITER_LIBRARIES}/*.a")
 set(SOURCE_FILES
     main.cpp
     get_help.cpp
-    #make_anim.cpp
+    make_anim.cpp
     make_annotation.cpp
     #make_light.cpp
     set_engine.cpp
     set_feature.cpp
     set_contact.cpp
     make_contact.cpp
-    #set_anim.cpp
+    set_anim.cpp
     set_annotation.cpp
 )
 

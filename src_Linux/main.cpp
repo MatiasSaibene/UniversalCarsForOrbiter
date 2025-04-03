@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include <cmath>
+#include <cstddef>
 
 //Constructor
 UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
@@ -189,6 +190,73 @@ UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
     msg10_annotation = nullptr;
     msg11_annotation = nullptr;
 
+    anim_right_front_wheel_rotation = 0;
+
+    anim_left_front_wheel_rotation = 0;
+
+    anim_right_rear_wheel_rotation = 0;
+
+    anim_left_rear_wheel_rotation = 0;
+
+    anim_right_front_wheel_steer = 0;
+
+    anim_left_front_wheel_steer = 0;
+
+    anim_right_front_wheel_travel = 0;
+
+    anim_left_front_wheel_travel = 0;
+
+    anim_right_rear_wheel_travel = 0;
+
+    anim_left_rear_wheel_travel = 0;
+
+    right_rear_wheel_rotation = 0.0;
+
+    right_front_wheel_rotation = 0.0;
+
+    left_rear_wheel_rotation = 0.0;
+
+    left_front_wheel_rotation = 0.0;
+
+    right_front_wheel_travel = nullptr;
+
+    right_front_wheel_steer = nullptr;
+
+    right_front_wheel_rotate = nullptr;
+
+    MeshName[0] = '\0';
+
+    size = 0.0;
+
+    empty_mass = 0.0;
+
+    main_fuel_tank_max = 0.0;
+
+    front_left_wheel_id = nullptr;
+
+    front_right_wheel_id = nullptr;
+
+    rear_right_wheel_id = nullptr;
+
+    rear_left_wheel_id = nullptr;
+
+    travel = 0.0;
+
+    wheel_radius = 0.0;
+
+    left_front_wheel_rotate = nullptr;
+
+    left_front_wheel_travel = nullptr;
+
+    left_front_wheel_steer = nullptr;
+
+    left_rear_wheel_travel = nullptr;
+
+    left_rear_wheel_rotate = nullptr;
+
+    right_rear_wheel_travel = nullptr;
+
+    right_rear_wheel_rotate = nullptr;
 }
 
 //Destructor
@@ -199,8 +267,172 @@ UCFO::~UCFO(){
 
 void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
+    //Get vessel parameters from configuration file,
+    //and set the physical vessel parameters.
+
+    if(!oapiReadItem_string(cfg, "Mesh", MeshName)){
+        TerminateAtError("%s: Mesh: %s", GetName(), "car");
+    }
+    oapiWriteLogV("%s: Mesh: %s", GetName(), MeshName);
+
+    mhUCFO = oapiLoadMeshGlobal(MeshName);
+    uimesh_UCFO = AddMesh(mhUCFO);
+    SetMeshVisibilityMode(uimesh_UCFO, MESHVIS_ALWAYS);
+
+    if(!oapiReadItem_float(cfg, "Size", size)){
+        TerminateAtError("Size", GetName(), "car");
+    }
+    SetSize(size);
+
+
+    if(!oapiReadItem_float(cfg, "Mass", empty_mass)){
+		TerminateAtError("Mass", GetName(), "car");
+	}
     SetEmptyMass(empty_mass);
+
+
+    if(!oapiReadItem_float(cfg, "Fuel", main_fuel_tank_max)){
+        TerminateAtError("Fuel", GetName(), "car");
+    }
     main_fuel_tank = CreatePropellantResource(main_fuel_tank_max);
+
+    if(!oapiReadItem_float(cfg, "Displacement", displacement)){
+        TerminateAtError("Displacement", GetName(), "car");
+    }
+
+    if(!oapiReadItem_float(cfg, "Compression", r)){
+        TerminateAtError("Compression", GetName(), "car");
+    }
+
+    if(!oapiReadItem_float(cfg, "MaxRPM", max_rpm)){
+        TerminateAtError("MaxRPM", GetName(), "car");
+    }
+
+    if(!oapiReadItem_float(cfg, "IdleRPM", idle_rpm)){
+        TerminateAtError("IdleRPM", GetName(), "car");
+    }
+
+    if(!oapiReadItem_float(cfg, "WheelRadius", wheel_radius)){
+        TerminateAtError("WheelRadius", GetName(), "car");
+    }
+
+    if(!oapiReadItem_float(cfg, "Travel", travel)){
+        TerminateAtError("Travel", GetName(), "car");
+    }
+
+
+    if (!front_left_wheel_id) { 
+        front_left_wheel_id = new int; // Asignamos memoria si es necesario
+    }
+
+    if (!front_right_wheel_id) { 
+        front_right_wheel_id = new int; // Asignamos memoria si es necesario
+    }
+
+    if (!rear_right_wheel_id) { 
+        rear_right_wheel_id = new int; // Asignamos memoria si es necesario
+    }
+
+    if (!rear_left_wheel_id) { 
+        rear_left_wheel_id = new int; // Asignamos memoria si es necesario
+    }
+
+    if(!oapiReadItem_int(cfg, "FrontLeftWheelID", *front_left_wheel_id)){
+		TerminateAtError("FrontLeftWheelID", GetName(), "car");
+	}
+    oapiWriteLogV("%s: FrontLeftWheelID: %d", GetName(), &front_left_wheel_id);
+
+
+    if(!oapiReadItem_int(cfg, "FrontRightWheelID", *front_right_wheel_id)){
+		TerminateAtError("FrontRightWheelID", GetName(), "car");
+	}
+    oapiWriteLogV("%s: FrontRightWheelID: %d", GetName(), &front_right_wheel_id);
+
+    if(!oapiReadItem_int(cfg, "RearLeftWheelID", *rear_left_wheel_id)){
+		TerminateAtError("RearLeftWheelID", GetName(), "car");
+	}
+    oapiWriteLogV("%s: RearLeftWheelID: %d", GetName(), &rear_left_wheel_id);
+
+    if(!oapiReadItem_int(cfg, "RearRightWheelID", *rear_right_wheel_id)){
+		TerminateAtError("RearRightWheelID", GetName(), "car");
+	}
+    oapiWriteLogV("%s: RearRightWheelID: %d", GetName(), &rear_right_wheel_id);
+
+
+    if(!oapiReadItem_vec(cfg, "FrontLeftWheelPosition", front_left_wheel_pos)){
+		TerminateAtError("FrontLeftWheelPosition", GetName(), "car");
+	}
+
+    if(!oapiReadItem_vec(cfg, "FrontRightWheelPosition", front_right_wheel_pos)){
+		TerminateAtError("FrontRightWheelPosition", GetName(), "car");
+	}
+
+    if(!oapiReadItem_vec(cfg, "RearLeftWheelPosition", rear_left_wheel_pos)){
+		TerminateAtError("RearLeftWheelPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "RearRightWheelPosition", rear_right_wheel_pos)){
+		TerminateAtError("RearRightWheelPosition", GetName(), "car");
+	}
+
+
+
+    if(!oapiReadItem_vec(cfg, "CameraPosition", camera_pos)){
+		TerminateAtError("CameraPosition", GetName(), "car");
+	}
+
+	SetCameraOffset(camera_pos);
+
+
+    if(!oapiReadItem_vec(cfg, "FrontRightWheelContact", front_right_wheel_contact)){
+		TerminateAtError("FrontRightWheelContact", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "FrontLeftWheelContact", front_left_wheel_contact)){
+		TerminateAtError("FrontLeftWheelContact", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "RearRightWheelContact", rear_right_wheel_contact)){
+		TerminateAtError("RearRightWheelContact", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "RearLeftWheelContact", rear_left_wheel_contact)){
+		TerminateAtError("RearLeftWheelContact", GetName(), "car");
+	}
+
+
+    if(!oapiReadItem_vec(cfg, "TouchdownPoint1", TDP1)){
+		TerminateAtError("TouchdownPoint1", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint2", TDP2)){
+		TerminateAtError("TouchdownPoint2", GetName(), "car");
+	}
+	
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint3", TDP3)){
+		TerminateAtError("TouchdownPoint3", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint4", TDP4)){
+		TerminateAtError("TouchdownPoint4", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint5", TDP5)){
+		TerminateAtError("TouchdownPoint5", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint6", TDP6)){
+		TerminateAtError("TouchdownPoint6", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint7", TDP7)){
+		TerminateAtError("TouchdownPoint7", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, "TouchdownPoint8", TDP8)){
+		TerminateAtError("TouchdownPoint8", GetName(), "car");
+	}
+
 
     //Dummy thruster to provide throttle input to engine model. 1 N thrust is to allow thruster status
     //to indicate throttle position
@@ -211,30 +443,27 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
     //Engine initialization
     //VW Thing engine specs
-    displacement = 1.584e-3; //engine displacement per cycle in cubic meters
+    //displacement = 1.584e-3; //engine displacement per cycle in cubic meters
     n_rev = 2; //shaft revolutions per cycle (1 for 2-stroke, 2 for 4-stroke)
-    r = 7.5; //Compression ratio
-    idle_rpm = 700;
-    max_rpm = 5000;
+    //r = 7.5; //Compression ratio
+    //idle_rpm = 700;
+    //max_rpm = 5000;
 
     //Fuel properties
     HV = 45e+6; //lower heating value of gasoline J/kg
     AF = 14.7; //stochiometric fuel air ratio for gasoline
 
-    mhUCFO = oapiLoadMeshGlobal("VWThing/VWThing");
-    uimesh_UCFO = AddMesh(mhUCFO);
-    SetMeshVisibilityMode(uimesh_UCFO, MESHVIS_ALWAYS);
-
-    SetCameraOffset(_V(-0.25, 1.0, 0.0));
+    //SetCameraOffset(_V(-0.25, 1.0, 0.0));
 
     MakeContact_TouchdownPoints();
-    oapiWriteLogV("front_right_wheel_contact: %f, %f, %f",
-        front_right_wheel_contact.x,
-        front_right_wheel_contact.y,
-        front_right_wheel_contact.z);
 
     //Screen message formatting
     MakeAnnotation_Format();
+
+    MakeAnim_RightFrontWheel();
+    MakeAnim_LeftFrontWheel();
+    MakeAnim_RightRearWheel();
+    MakeAnim_LeftRearWheel();
 
 }
 
@@ -300,6 +529,11 @@ void UCFO::clbkPreStep(double simt, double simdt, double mjd){
     GetHelp_StickOrSkid();
 
     SetAnnotation_Messages();
+
+    SetAnim_RightFrontWheel();
+    SetAnim_LeftFrontWheel();
+    SetAnim_RightRearWheel();
+    SetAnim_LeftRearWheel();
 
 
 }
@@ -367,6 +601,13 @@ int UCFO::clbkConsumeBufferedKey(int key, bool down, char *kstate){
     }
 
     return 0;
+}
+
+void UCFO::TerminateAtError(const char *error, const char * className, const char *type){
+
+    oapiWriteLogV("ERROR: UCFO cannot continue: The %s of %s %s is not specified", error, className, type);
+
+    std::terminate();
 }
 
 DLLCLBK void InitModule(MODULEHANDLE hModule){

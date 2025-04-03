@@ -107,10 +107,6 @@ VECTOR3 UCFO::GetHelp_Rotate(VECTOR3 point, double pitch, double yaw, double ban
 
 void UCFO::GetHelp_NormalForce(){
 
-    double dot_product = 0.0;
-    double len_product = 0.0;
-    double cos_angle = 0.0;
-
     //Determine location of vehicle contact points in rotated vessel frame
 
     front_right_wheel_contact_local = GetHelp_Rotate(front_right_wheel_contact, pitch, yaw, bank);
@@ -120,81 +116,17 @@ void UCFO::GetHelp_NormalForce(){
     rear_left_wheel_contact_local = GetHelp_Rotate(rear_left_wheel_contact, pitch, yaw, bank);
 
     //Determine angle between rotated and local contact points
-    /* front_right_tilt_angle = (front_right_wheel_contact_local.y / std::abs(front_right_wheel_contact_local.y)) * std::acos(dotp(front_right_wheel_contact, front_right_wheel_contact_local) / length(front_right_wheel_contact) * length(front_right_wheel_contact_local)); */
-    
-    dot_product = dotp(front_right_wheel_contact, front_right_wheel_contact_local);
-    len_product = length(front_right_wheel_contact) * length(front_right_wheel_contact_local);
 
-    // Asegurar que no haya división por cero
-    if (len_product > 0) {
-        cos_angle = dot_product / len_product;
-        
-        // Clampeamos el valor entre -1 y 1 para evitar valores fuera del rango de acos()
-        cos_angle = std::max(-1.0, std::min(1.0, cos_angle));
-
-        front_right_tilt_angle = (front_right_wheel_contact_local.y / std::abs(front_right_wheel_contact_local.y)) * acos(cos_angle);
-    } else {
-        oapiWriteLog("Error: División por cero en cálculo de tilt angle.");
-        front_right_tilt_angle = 0.0; // Asignamos un valor seguro
-    }
+    front_right_tilt_angle = (front_right_wheel_contact_local.y / abs(front_right_wheel_contact_local.y)) * acos(dotp(front_right_wheel_contact, front_right_wheel_contact_local) / length(front_right_wheel_contact) * length(front_right_wheel_contact_local));
 
 
-    /* front_left_tilt_angle = (front_left_wheel_contact_local.y / abs(front_left_wheel_contact_local.y)) * acos(dotp(front_left_wheel_contact, front_left_wheel_contact_local) / (length(front_left_wheel_contact) * length(front_left_wheel_contact_local))); */
-
-    dot_product = dotp(front_left_wheel_contact_local, front_left_wheel_contact_local);
-    len_product = length(front_left_wheel_contact) * length(front_left_wheel_contact_local);
-
-    // Asegurar que no haya división por cero
-    if (len_product > 0) {
-        cos_angle = dot_product / len_product;
-        
-        // Clampeamos el valor entre -1 y 1 para evitar valores fuera del rango de acos()
-        cos_angle = std::max(-1.0, std::min(1.0, cos_angle));
-
-        front_left_tilt_angle = (front_left_wheel_contact_local.y / std::abs(front_left_wheel_contact_local.y)) * acos(cos_angle);
-    } else {
-        oapiWriteLog("Error: División por cero en cálculo de tilt angle.");
-        front_left_tilt_angle = 0.0; // Asignamos un valor seguro
-    }
+    front_left_tilt_angle = (front_left_wheel_contact_local.y / abs(front_left_wheel_contact_local.y)) * acos(dotp(front_left_wheel_contact, front_left_wheel_contact_local) / (length(front_left_wheel_contact) * length(front_left_wheel_contact_local)));
 
 
-    /* rear_right_tilt_angle = (rear_right_wheel_contact_local.y / abs(rear_right_wheel_contact_local.y)) * acos(dotp(rear_right_wheel_contact, rear_right_wheel_contact_local) / (length(rear_right_wheel_contact) * length(rear_right_wheel_contact_local))); */
-
-    dot_product = dotp(rear_right_wheel_contact_local, rear_right_wheel_contact_local);
-    len_product = length(rear_right_wheel_contact) * length(rear_right_wheel_contact_local);
-
-    // Asegurar que no haya división por cero
-    if (len_product > 0) {
-        cos_angle = dot_product / len_product;
-        
-        // Clampeamos el valor entre -1 y 1 para evitar valores fuera del rango de acos()
-        cos_angle = std::max(-1.0, std::min(1.0, cos_angle));
-
-        rear_right_tilt_angle = (rear_right_wheel_contact_local.y / std::abs(rear_right_wheel_contact_local.y)) * acos(cos_angle);
-    } else {
-        oapiWriteLog("Error: División por cero en cálculo de tilt angle.");
-        rear_right_tilt_angle = 0.0; // Asignamos un valor seguro
-    }
+    rear_right_tilt_angle = (rear_right_wheel_contact_local.y / abs(rear_right_wheel_contact_local.y)) * acos(dotp(rear_right_wheel_contact, rear_right_wheel_contact_local) / (length(rear_right_wheel_contact) * length(rear_right_wheel_contact_local)));
 
 
-
-    /* rear_left_tilt_angle = (rear_left_wheel_contact_local.y / abs(rear_left_wheel_contact_local.y)) * acos(dotp(rear_left_wheel_contact, rear_left_wheel_contact_local) / (length(rear_left_wheel_contact) * length(rear_left_wheel_contact_local))); */
-
-    dot_product = dotp(rear_left_wheel_contact_local, rear_left_wheel_contact_local);
-    len_product = length(rear_left_wheel_contact) * length(rear_left_wheel_contact_local);
-
-    // Asegurar que no haya división por cero
-    if (len_product > 0) {
-        cos_angle = dot_product / len_product;
-        
-        // Clampeamos el valor entre -1 y 1 para evitar valores fuera del rango de acos()
-        cos_angle = std::max(-1.0, std::min(1.0, cos_angle));
-
-        rear_left_tilt_angle = (rear_left_wheel_contact_local.y / std::abs(rear_left_wheel_contact_local.y)) * acos(cos_angle);
-    } else {
-        oapiWriteLog("Error: División por cero en cálculo de tilt angle.");
-        rear_left_tilt_angle = 0.0; // Asignamos un valor seguro
-    }
+    rear_left_tilt_angle = (rear_left_wheel_contact_local.y / abs(rear_left_wheel_contact_local.y)) * acos(dotp(rear_left_wheel_contact, rear_left_wheel_contact_local) / (length(rear_left_wheel_contact) * length(rear_left_wheel_contact_local)));
 
 
     //Determine strut displacement from tilt angle using right triangle
@@ -315,17 +247,7 @@ void UCFO::GetHelp_StaticFriction(){
 
     double urr = 0.5;
 
-    dxFR = urr * dxFR + (1 - urr) * velFR.x * dt;
-    dxFL = urr * dxFL + (1 - urr) * velFL.x * dt;
-    dxRR = urr * dxRR + (1 - urr) * velRR.x * dt;
-    dxRL = urr * dxRL + (1 - urr) * velRL.x * dt;
-
-    dzFR = urr * dzFR + (1 - urr) * velFR.z * dt;
-    dzFL = urr * dzFL + (1 - urr) * velFL.z * dt;
-    dzRR = urr * dzRR + (1 - urr) * velRR.z * dt;
-    dzRL = urr * dzRL + (1 - urr) * velRL.z * dt;
-
-    /* dxFR = urr*dxFR + velFR.x*dt;
+    dxFR = urr*dxFR + velFR.x*dt;
     dxFL = urr*dxFL + velFL.x*dt;
     dxRR = urr*dxRR + velRR.x*dt;
     dxRL = urr*dxRL + velRL.x*dt;
@@ -333,7 +255,7 @@ void UCFO::GetHelp_StaticFriction(){
     dzFR = urr*dzFR + velFR.z*dt;
     dzFL = urr*dzFL + velFL.z*dt;
     dzRR = urr*dzRR + velRR.z*dt;
-    dzRL = urr*dzRL + velRL.z*dt; */
+    dzRL = urr*dzRL + velRL.z*dt;
 
 
     if(front_right_wheel_force > 0){
@@ -391,62 +313,53 @@ void UCFO::GetHelp_StaticFriction(){
 
 void UCFO::GetHelp_StickOrSkid(){
 
-    double max_force = 1e4;  // Ajusta según pruebas
+    if(length(front_right_turning_force_axis) > mu_sta * front_right_wheel_force){
 
-    auto limit_force = [max_force](VECTOR3 &force) {
-        double len = length(force);
-        if (len > max_force) {
-            force = unit(force) * max_force;
-        } else if (len < 1e-6) {  // Evita divisiones por 0
-            force = _V(0, 0, 0);
-        }
-    };
-
-    // Limitar fuerzas de fricción dinámica y estática
-    limit_force(front_right_skid_force_axis);
-    limit_force(front_left_skid_force_axis);
-    limit_force(rear_right_skid_force_axis);
-    limit_force(rear_left_skid_force_axis);
-
-    limit_force(front_right_turning_force_axis);
-    limit_force(front_left_turning_force_axis);
-    limit_force(rear_right_turning_force_axis);
-    limit_force(rear_left_turning_force_axis);
-
-    // Aplicar fuerzas optimizando cálculos
-    double fr_turning_len = length(front_right_turning_force_axis);
-    if (fr_turning_len > mu_sta * front_right_wheel_force) {
         AddForce(front_right_skid_force_axis, front_right_wheel_contact_local);
         FR_status = 'S';
+
     } else {
+
         AddForce(front_right_turning_force_axis, front_right_wheel_contact_local);
         FR_status = 'T';
+
     }
 
-    double fl_turning_len = length(front_left_turning_force_axis);
-    if (fl_turning_len > mu_sta * front_left_wheel_force) {
+    if(length(front_left_turning_force_axis) > mu_sta * front_left_wheel_force){
+
         AddForce(front_left_skid_force_axis, front_left_wheel_contact_local);
         FL_status = 'S';
+
     } else {
+        
         AddForce(front_left_turning_force_axis, front_left_wheel_contact_local);
         FL_status = 'T';
+
     }
 
-    double rr_turning_len = length(rear_right_turning_force_axis);
-    if (rr_turning_len > mu_sta * rear_right_wheel_force) {
+    if(length(rear_right_turning_force_axis) > mu_sta * rear_right_wheel_force){
+
         AddForce(rear_right_skid_force_axis, rear_right_wheel_contact_local);
         RR_status = 'S';
+
     } else {
+
         AddForce(rear_right_turning_force_axis, rear_right_wheel_contact_local);
         RR_status = 'T';
+
     }
 
-    double rl_turning_len = length(rear_left_turning_force_axis);
-    if (rl_turning_len > mu_sta * rear_left_wheel_force) {
+    if(length(rear_left_turning_force_axis) > mu_sta * rear_left_wheel_force){
+
         AddForce(rear_left_skid_force_axis, rear_left_wheel_contact_local);
         RL_status = 'S';
+
     } else {
+
         AddForce(rear_left_turning_force_axis, rear_left_wheel_contact_local);
         RL_status = 'T';
+
     }
+
+
 }

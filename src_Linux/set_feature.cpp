@@ -6,11 +6,11 @@ void UCFO::SetFeature_Caster(){
     //Slowly returns steering angle to zero when no steering inputs applied
     if(steering_angle > 0){
 
-        steering_angle = steering_angle - 0.01*RAD;
+        steering_angle = steering_angle - 1*RAD;
 
     } else if(steering_angle < 0){
         
-        steering_angle = steering_angle + 0.01*RAD;
+        steering_angle = steering_angle + 1*RAD;
         
     }
 
@@ -18,7 +18,7 @@ void UCFO::SetFeature_Caster(){
 
 void UCFO::SetFeature_Ackermann(){
 
-    double R = std::max(wheel_base / sin(steering_angle), 1.5); // Asegura un radio mínimo
+    double R = (wheel_base / sin(steering_angle));
 
     if(steering_angle > 0){
 
@@ -44,9 +44,10 @@ void UCFO::SetFeature_Ackermann(){
 
 void UCFO::SetFeature_Brakes() {
     if (brake_status == 'N') {
-        if (length(vel) > 1e-6) {  // Evita división por cero
-            VECTOR3 brake_force = unit(vel) * (-mu_dyn * max_weight);
-            AddForce(brake_force, _V(0, -wheel_radius, 0));
+        if (length(vel) > 0) {
+
+            AddForce(_V(0, 0, (-vel.z/length(vel) * mu_dyn * max_weight)), _V(0, -wheel_radius, 0));
+            
         }
         SetThrusterGroupLevel(THGROUP_MAIN, 0);
     }

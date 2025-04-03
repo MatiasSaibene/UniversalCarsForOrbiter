@@ -17,6 +17,8 @@ class UCFO : public VESSEL4{
         
         virtual ~UCFO();
 
+        void TerminateAtError(const char *error, const char * className, const char *type);
+
         void MakeContact_TouchdownPoints();
         void SetContact_TouchdownPoints();
 
@@ -38,6 +40,17 @@ class UCFO : public VESSEL4{
 
         void MakeAnnotation_Format();
         void SetAnnotation_Messages();
+
+
+        void MakeAnim_RightFrontWheel();
+        void MakeAnim_LeftFrontWheel();
+        void MakeAnim_RightRearWheel();
+        void MakeAnim_LeftRearWheel();
+        void SetAnim_RightFrontWheel();
+        void SetAnim_LeftFrontWheel();
+        void SetAnim_RightRearWheel();
+        void SetAnim_LeftRearWheel();
+
 
         void clbkSetClassCaps(FILEHANDLE cfg) override;
         void clbkPostCreation() override;
@@ -61,12 +74,11 @@ class UCFO : public VESSEL4{
 
         double mass;
 
-        double empty_mass = 910.0 + 100.0;
-        double main_fuel_tank_max = 25.0;
-        double travel = 0.06;
+        
+        //double travel = 0.06;
         double mu_dyn = 0.7;
         double mu_sta = 1.0;
-        double wheel_radius = 0.322;
+        //double wheel_radius = 0.286;
 
         VECTOR3 front_right_wheel_contact;
         VECTOR3 front_left_wheel_contact;
@@ -76,14 +88,7 @@ class UCFO : public VESSEL4{
 
         double wheel_base;
 
-        double wheel_track;
-
-        VECTOR3 front_right_wheel_axle = _V(0.586, 0.000, 1.392);
-        VECTOR3 front_left_wheel_axle = _V(-0.586, 0.000, 1.392);
-        VECTOR3 rear_right_wheel_axle = _V(0.586, 0.000, -1.084);
-        VECTOR3 rear_left_wheel_axle = _V(-0.586, 0.000, -1.084);
-
-        
+        double wheel_track;    
 
         double dxFR;
         double dxFL;
@@ -214,6 +219,43 @@ class UCFO : public VESSEL4{
         double front_left_displacement;
         double rear_right_displacement;
         double rear_left_displacement;
+
+        unsigned int anim_right_front_wheel_rotation, anim_left_front_wheel_rotation, anim_right_rear_wheel_rotation, anim_left_rear_wheel_rotation;
+
+        double right_rear_wheel_rotation, right_front_wheel_rotation, left_rear_wheel_rotation, left_front_wheel_rotation;
+
+        unsigned int anim_right_front_wheel_steer, anim_left_front_wheel_steer;
+        unsigned int anim_right_front_wheel_travel, anim_left_front_wheel_travel, anim_right_rear_wheel_travel,
+        anim_left_rear_wheel_travel;
+
+        MGROUP_TRANSLATE* right_front_wheel_travel;  
+        MGROUP_ROTATE* right_front_wheel_steer;
+        MGROUP_ROTATE* right_front_wheel_rotate;
+        MGROUP_TRANSLATE* left_front_wheel_travel;  
+        MGROUP_ROTATE* left_front_wheel_steer;
+        MGROUP_ROTATE* left_front_wheel_rotate;
+        MGROUP_TRANSLATE* left_rear_wheel_travel;  
+        MGROUP_ROTATE* left_rear_wheel_rotate;
+        MGROUP_TRANSLATE* right_rear_wheel_travel;  
+        MGROUP_ROTATE* right_rear_wheel_rotate;
+
+
+        //Variables to make UniversalCars more "universal"
+        char MeshName[256];
+        double size;
+        double empty_mass;
+        double main_fuel_tank_max;
+        int *front_left_wheel_id;
+        int *front_right_wheel_id;
+        int *rear_right_wheel_id;
+        int *rear_left_wheel_id;
+        VECTOR3 front_left_wheel_pos;
+        VECTOR3 front_right_wheel_pos;
+        VECTOR3 rear_left_wheel_pos;
+        VECTOR3 rear_right_wheel_pos;
+        VECTOR3 camera_pos;
+        double travel;
+        double wheel_radius;
 };
 
 #endif //!__MAIN_HPP
