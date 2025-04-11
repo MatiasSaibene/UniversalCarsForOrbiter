@@ -1,9 +1,18 @@
+/////////////////////////////////////////////////////
+//Copyright (c)2025 Thunder Chicken & Matías Saibene//
+//ORBITER MODULE: UNIVERSAL CARS FOR ORBITER (UCFO)//
+//      Licenced under the MIT Licence             //
+//        main.cpp  Main implementation file       //
+/////////////////////////////////////////////////////
 #include "main.hpp"
+#include <cctype>
 #include <cmath>
 #include <cstddef>
+#include <optional>
+#include "format"
 
 //Constructor
-UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
+UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel), uacs(this, &vslAstrInfo, nullptr){
 
     vhUCFO = nullptr;
 
@@ -285,6 +294,10 @@ UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
     left_backup_light_point = nullptr;
 
     right_backup_light_point = nullptr;
+
+    pBrake = false;
+
+    ExitPosition1 = _V(0, 0, 0);
 }
 
 //Destructor
@@ -373,19 +386,19 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 	}
 
     if (!front_left_wheel_id) { 
-        front_left_wheel_id = new int; // Asignamos memoria si es necesario
+        front_left_wheel_id = new int; 
     }
 
     if (!front_right_wheel_id) { 
-        front_right_wheel_id = new int; // Asignamos memoria si es necesario
+        front_right_wheel_id = new int; 
     }
 
     if (!rear_right_wheel_id) { 
-        rear_right_wheel_id = new int; // Asignamos memoria si es necesario
+        rear_right_wheel_id = new int;
     }
 
     if (!rear_left_wheel_id) { 
-        rear_left_wheel_id = new int; // Asignamos memoria si es necesario
+        rear_left_wheel_id = new int;
     }
 
     if(!oapiReadItem_int(cfg, "FrontLeftWheelID", *front_left_wheel_id)){
@@ -433,6 +446,11 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 	}
 
 	SetCameraOffset(camera_pos);
+
+
+    if(!oapiReadItem_vec(cfg, "ExitPosition1", ExitPosition1)){
+        TerminateAtError("ExitPosition1", GetName(), "car");
+    }
 
 
     if(!oapiReadItem_vec(cfg, "FrontRightWheelContact", front_right_wheel_contact)){
@@ -506,6 +524,8 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
     //SetCameraOffset(_V(-0.25, 1.0, 0.0));
 
+    SetMaxWheelbrakeForce(50);
+
     MakeContact_TouchdownPoints();
 
     //Screen message formatting
@@ -535,9 +555,29 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
     AddParticleStream(&wheel_trails, rear_right_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
 
+
+    //UACS support... Yay!
+
+    UACS::AirlockInfo airInfo;
+
+    airInfo.name = "CarDoor";
+    airInfo.pos = ExitPosition1;
+    airInfo.dir = FORWARD_DIRECTION;
+    airInfo.rot = _V(-1, 0, 0);
+    airInfo.hDock = CreateDock(ExitPosition1, FORWARD_DIRECTION, _V(-1, 0, 0));
+    airInfo.gndInfo.pos = std::nullopt;
+
+    vslAstrInfo.airlocks.push_back(airInfo);
+    vslAstrInfo.stations.emplace_back("Pilot");
+
+
+
+
 }
 
 void UCFO::clbkPostCreation(){
+
+    uacs.clbkPostCreation();
 
     //Following is needed to allow the suspension to be set and tuned to the correct height independent of the planetary body it is on.
     wheel_base = front_right_wheel_contact.z - rear_right_wheel_contact.z;
@@ -552,8 +592,9 @@ void UCFO::clbkPostCreation(){
 
     max_weight_rear = max_weight - max_weight_front; //weight supported by two rear wheels.
 
-    SetContact_TouchdownPoints();
+    SetContact_TouchdownPoints(pBrake);
 
+    SetEmptyMass(GetEmptyMass() + uacs.GetTotalAstrMass());
     
 }
 
@@ -610,6 +651,8 @@ void UCFO::clbkPreStep(double simt, double simdt, double mjd){
     SetLightHeadlights();
     SetLightBrakelights();
     SetLightBackuplights();
+
+    if(astrHUD.timer < 5) astrHUD.timer += simdt;
 
 }
 
@@ -701,7 +744,240 @@ int UCFO::clbkConsumeBufferedKey(int key, bool down, char *kstate){
 
     }
 
+    if(key == OAPI_KEY_NUMPADENTER && down){
+
+        if(pBrake == false){
+            pBrake = true;
+            SetThrusterGroupLevel(THGROUP_MAIN, 0);
+            SetContact_TouchdownPoints(pBrake);
+            SetWheelbrakeLevel(1, 0, true);
+        } else {
+            pBrake = false;
+            SetContact_TouchdownPoints(pBrake);
+            SetWheelbrakeLevel(0, 0, true);
+        }
+
+    }
+
+    if(KEYMOD_ALT(kstate) && key == OAPI_KEY_M){
+        hudMode < 2 ? hudMode++ : hudMode = 0;
+        return 1;
+    } else if(hudMode != HUD_OP) return 0;
+
+    if(KEYMOD_ALT(kstate)){
+        
+        switch(key){
+
+            case OAPI_KEY_NUMPAD8:
+                astrHUD.idx + 1 < uacs.GetAvailAstrCount() ? ++astrHUD.idx : astrHUD.idx = 0;
+                return 1;
+
+            case OAPI_KEY_NUMPAD2:
+                astrHUD.idx > 0 ? --astrHUD.idx : astrHUD.idx = uacs.GetAvailAstrCount() - 1;
+                return 1;
+            
+        }
+
+    }
+
+    if(KEYMOD_ALT(kstate)){
+
+        switch(key){
+
+            case OAPI_KEY_A:
+                
+                switch(uacs.AddAstronaut(astrHUD.idx)){
+
+                    case UACS::INGRS_SUCCED : 
+                        astrHUD.msg = "Success: Selected astronaut added.";
+                        break;
+                    
+                        case UACS::INGRS_STN_OCCP : 
+                            astrHUD.msg = "Error: Station occupied.";
+                            break;
+                        
+                        case UACS::INGRS_FAIL : 
+                            astrHUD.msg = "Error: The addition failed.";
+                            break;
+                }
+
+                astrHUD.timer = 0;
+                return 1;
+
+            case OAPI_KEY_E:{
+                
+                switch(uacs.EgressAstronaut()){
+
+                    case UACS::EGRS_SUCCED:
+                        astrHUD.msg = "Success: Astronaut egressed.";
+                        break;
+                    
+                    case UACS::EGRS_STN_EMPTY:
+					    astrHUD.msg = "Error: No astronaut onboard.";
+						break;
+
+                    case UACS::EGRS_ARLCK_DCKD:
+						astrHUD.msg = "Error: Airlock blocked by a docked vessel.";
+						break;
+
+					case UACS::EGRS_NO_EMPTY_POS:
+						astrHUD.msg = "Error: No empty position nearby.";
+						break;
+
+					case UACS::EGRS_INFO_NOT_SET:
+						astrHUD.msg = "Error: Astronaut egressed but info not set.";
+						break;
+
+					case UACS::EGRS_FAIL:
+						astrHUD.msg = "Error: The egress failed.";
+						break;
+                }
+
+                astrHUD.timer = 0;
+                return 1;
+
+            }
+
+        }
+    }
+
+
+
     return 0;
+}
+
+void UCFO::clbkLoadStateEx(FILEHANDLE scn, void *status){
+
+    char *line;
+
+    while(oapiReadScenario_nextline(scn, line)){
+        if(!uacs.ParseScenarioLine(line)){
+            ParseScenarioLineEx(line, status);
+        }
+    }
+}
+
+void UCFO::clbkSaveState(FILEHANDLE scn){
+
+    VESSEL4::clbkSaveState(scn);
+
+    uacs.clbkSaveState(scn);
+
+}
+
+int UCFO::clbkGeneric(int msgid, int prm, void *context){
+
+    if(msgid == UACS::MSG){
+        
+        switch(prm){
+
+            case UACS::ASTR_INGRS:{
+
+                auto astrIdx = *static_cast<size_t*>(context);
+                auto &astrInfo = vslAstrInfo.stations.at(astrIdx).astrInfo;
+
+                SetEmptyMass(GetEmptyMass() + astrInfo->mass);
+                return 1;
+            }
+
+            case UACS::ASTR_EGRS:{
+
+                auto astrIdx = *static_cast<size_t*>(context);
+                auto &astrInfo = vslAstrInfo.stations.at(astrIdx).astrInfo;
+
+                SetEmptyMass(GetEmptyMass() - astrInfo->mass);
+                return 1;
+
+            }
+
+            default:
+                return 0;
+            
+        }
+    }
+
+    return 0;
+}
+
+bool UCFO::clbkDrawHUD(int mode, const HUDPAINTSPEC *hps, oapi::Sketchpad *skp){
+
+    VESSEL4::clbkDrawHUD(mode, hps, skp);
+
+    int x = HIWORD(skp->GetCharSize());
+	int rightX = hps->W - x;
+	int startY = int(0.215 * hps->H);
+	int y = startY;
+
+    int space = LOWORD(skp->GetCharSize());
+    int largeSpace = int(1.5 * space);
+
+    if(hudMode == UCFO::HUD_OP){
+        x = rightX;
+        y = startY;
+        skp->SetTextAlign(oapi::Sketchpad::RIGHT);
+
+        buffer = std::format("Selected available astronaut: {}", uacs.GetAvailAstrName(astrHUD.idx));
+        skp->Text(x, y, buffer.c_str(), buffer.size());
+
+        if(astrHUD.timer < 5){
+            y += largeSpace;
+            skp->Text(x, y, astrHUD.msg.c_str(), astrHUD.msg.size());
+        }
+
+        if(const auto &info = vslAstrInfo.stations.front().astrInfo){
+            const auto &astrInfo = *info;
+
+            y += largeSpace;
+            skp->Text(x, y, "Onboard astronaut information", 29);
+            y += largeSpace;
+
+            buffer = std::format("Name: {}", astrInfo.name);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = astrInfo.role;
+            buffer[0] = std::toupper(buffer[0]);
+
+            buffer = std::format("Role: {}", buffer);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = std::format("Mass: {:g}kg", astrInfo.mass);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += largeSpace;
+
+            buffer = std::format("Fuel: {:g}%", astrInfo.fuelLvl * 100);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = std::format("Oxygen: {:g}%", astrInfo.oxyLvl * 100);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = std::format("Alive: {}", astrInfo.alive ? "Yes" : "No");
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+        }
+
+    } else if(hudMode == HUD_SRT){
+
+	    x = rightX;
+		y = startY;
+		skp->SetTextAlign(oapi::Sketchpad::RIGHT);
+
+		skp->Text(x, y, "Alt + Numpad 8/2: Select next/previous available astronaut", 58);
+		y += space;
+
+		skp->Text(x, y, "Right Alt + A: Add selected astronaut", 37);
+		y += space;
+
+		skp->Text(x, y, "Right Alt + E: Egress onboard astronaut", 39);
+		y += space;
+
+		skp->Text(x, y, "Right Alt + D: Delete onboard astronaut", 39);
+    }
+
+    return true;
+
 }
 
 void UCFO::TerminateAtError(const char *error, const char * className, const char *type){

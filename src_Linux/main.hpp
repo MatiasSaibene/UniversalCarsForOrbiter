@@ -1,13 +1,27 @@
+//////////////////////////////////////////////////////
+//Copyright (c)2025 Thunder Chicken & Matías Saibene//
+//ORBITER MODULE: UNIVERSAL CARS FOR ORBITER (UCFO) //
+//          Licenced under the MIT Licence          //
+//              main.h  Main header file            //
+//////////////////////////////////////////////////////
+
 #pragma once
 
+
+#include <cstddef>
+#include <string>
 #ifndef __MAIN_HPP
 #define __MAIN_HPP
+
+#define HIWORD(l) ((uint16_t)((((uint32_t)(l)) >> 16) & 0xFFFF))
+#define LOWORD(l) ((uint16_t)((uint32_t)(l) & 0xFFFF))
 
 #include <cmath>
 #include <sys/types.h>
 #include <cstring>
 #include <cstdio>
 #include "HEADERS//Orbitersdk.h"
+#include "HEADERS//UACS//Module.h"
 
 const VECTOR3 FORWARD_DIRECTION = {0, 0, 1};
 
@@ -24,12 +38,14 @@ class UCFO : public VESSEL4{
         void TerminateAtError(const char *error, const char * className, const char *type);
 
         void MakeContact_TouchdownPoints();
-        void SetContact_TouchdownPoints();
+        void SetContact_TouchdownPoints(bool pBrake);
 
         void SetFeature_Caster();
         void SetFeature_Ackermann();
         void SetFeature_Brakes();
         void SetEngine_Power();
+
+
 
         VECTOR3 GetHelp_RotatePitch(VECTOR3, double);
         VECTOR3 GetHelp_RotateYaw(VECTOR3, double);
@@ -69,8 +85,26 @@ class UCFO : public VESSEL4{
         void clbkPreStep(double, double, double) override;
         int clbkConsumeBufferedKey(int, bool, char *) override;
         int clbkConsumeDirectKey(char *) override;
+        void clbkLoadStateEx(FILEHANDLE scn, void *status) override;
+        void clbkSaveState(FILEHANDLE scn) override;
+        int clbkGeneric(int msgid, int prm, void *context) override;
+        bool clbkDrawHUD(int mode, const HUDPAINTSPEC *hps, oapi::Sketchpad *skp) override;
     
     private:
+        UACS::Module uacs;
+        UACS::VslAstrInfo vslAstrInfo;
+        UACS::VslCargoInfo vslCargoInfo;
+
+        enum{HUD_OP = 1, HUD_SRT};
+        size_t hudMode{HUD_NONE};
+
+        struct HudInfo{
+            size_t idx{};
+            std::string msg;
+            double timer {5};
+        }astrHUD;
+        std::string buffer;
+
         VISHANDLE vhUCFO;
         MESHHANDLE mhUCFO, mhcockpitUCFO;
         DEVMESHHANDLE dmhUCFO;
@@ -86,6 +120,7 @@ class UCFO : public VESSEL4{
 
         double mass;
 
+        bool pBrake;
         
         //double travel = 0.06;
         double mu_dyn = 0.7;
@@ -284,6 +319,8 @@ class UCFO : public VESSEL4{
         VECTOR3 camera_pos;
         double travel;
         double wheel_radius;
+
+        VECTOR3 ExitPosition1;
 };
 
 #endif //!__MAIN_HPP
