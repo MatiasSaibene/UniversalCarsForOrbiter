@@ -16,7 +16,7 @@ void UCFO::SetAnim_RightFrontWheel(){
 
     //SetAnimation(anim_right_front_wheel_travel, 0.5 + front_right_displacement / (2.0*travel));
 
-    SetAnimation(anim_right_front_wheel_steer, 0.5 + angle_right / (45*RAD));
+    //SetAnimation(anim_right_front_wheel_steer, 0.5 + angle_right / (45*RAD));
 
     SetAnimation(anim_right_front_wheel_rotation, right_front_wheel_rotation);
 
@@ -40,7 +40,7 @@ void UCFO::SetAnim_LeftFrontWheel(){
 
     //SetAnimation(anim_left_front_wheel_travel, 0.5 + front_left_displacement / (2.0*travel));
 
-    SetAnimation(anim_left_front_wheel_steer, 0.5 + angle_left / (45*RAD));
+    //SetAnimation(anim_left_front_wheel_steer, 0.5 + angle_left / (45*RAD));
 
     SetAnimation(anim_left_front_wheel_rotation, left_front_wheel_rotation);
 

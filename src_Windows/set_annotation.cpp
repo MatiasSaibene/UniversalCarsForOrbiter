@@ -1,7 +1,5 @@
-#include "main.h"
+#include "main.hpp"
 
-#include <cstring>
-#include <string.h>
 #include <string>
 #include <cstdio>
 
@@ -16,10 +14,11 @@ void UCFO::SetAnnotation_Messages(){
 
     std::string message3, message4, message5, message6;
     std::string message7 = "Steer with rudder controls";
-    std::string message8 = "Brake with spacebar";
-    std::string message9 = "Shift forward/reverse with comma (,) and period (.)";
-    std::string message10 = "Switch between forward view (F) and tire view (V)";
-    std::string message11 = "Toggle headlights with L";
+    std::string message8 = "Right ALT + M to display UACS HUD";
+    std::string message9 = "Brake with spacebar";
+    std::string message10 = "Shift forward/reverse with comma (,) and period (.)";
+    std::string message11 = "Switch between forward view (F) and tire view (V)";
+    std::string message12 = "Toggle headlights with L";
 
     if (drive_status == 'F') {
         message3 = "D";
@@ -29,51 +28,16 @@ void UCFO::SetAnnotation_Messages(){
         message5 = "R";
     }
 
-    char *cmessage1 = nullptr;
-    strcpy(cmessage1, message1.c_str());
-
-    char *cmessage2 = nullptr;
-    strcpy(cmessage2, message2.c_str());
-
-    char *cmessage3 = nullptr;
-    strcpy(cmessage3, message3.c_str());
-
-    char *cmessage4 = nullptr;
-    strcpy(cmessage4, message4.c_str());
-
-    char *cmessage5 = nullptr;
-    strcpy(cmessage5, message5.c_str());
-
-    char *cmessage6 = nullptr;
-    strcpy(cmessage6, message6.c_str());
-
-    char *cmessage7 = nullptr;
-    strcpy(cmessage7, message7.c_str());
-
-    char *cmessage8 = nullptr;
-    strcpy(cmessage8, message8.c_str());
-
-    char *cmessage9 = nullptr;
-    strcpy(cmessage9, message9.c_str());
-    
-    char *cmessage10 = nullptr;
-    strcpy(cmessage10, message10.c_str());
-    
-    char *cmessage11 = nullptr;
-    strcpy(cmessage11, message11.c_str());
-    
-
-    oapiAnnotationSetText(msg1_annotation, cmessage1);
-    oapiAnnotationSetText(msg2_annotation, cmessage2);
-    oapiAnnotationSetText(msg3_annotation, cmessage3);
-    oapiAnnotationSetText(msg4_annotation, cmessage4);
-    oapiAnnotationSetText(msg5_annotation, cmessage5);
-    oapiAnnotationSetText(msg6_annotation, cmessage6);
-    oapiAnnotationSetText(msg7_annotation, cmessage7);
-    oapiAnnotationSetText(msg8_annotation, cmessage8);
-    oapiAnnotationSetText(msg9_annotation, cmessage9);
-    oapiAnnotationSetText(msg10_annotation, cmessage10);
-    oapiAnnotationSetText(msg11_annotation, cmessage11);
-
+    if (msg1_annotation) oapiAnnotationSetText(msg1_annotation, const_cast<char *>(message1.c_str()));
+    if (msg2_annotation) oapiAnnotationSetText(msg2_annotation, const_cast<char *>(message2.c_str()));
+    if (msg3_annotation) oapiAnnotationSetText(msg3_annotation, const_cast<char *>(message3.c_str()));
+    if (msg4_annotation) oapiAnnotationSetText(msg4_annotation, const_cast<char *>(message4.c_str()));
+    if (msg5_annotation) oapiAnnotationSetText(msg5_annotation, const_cast<char *>(message5.c_str()));
+    if (msg6_annotation) oapiAnnotationSetText(msg6_annotation, const_cast<char *>(message6.c_str()));
+    if (msg8_annotation) oapiAnnotationSetText(msg8_annotation, const_cast<char *>(message8.c_str()));
+    if (msg9_annotation) oapiAnnotationSetText(msg9_annotation, const_cast<char *>(message9.c_str()));
+    if (msg10_annotation) oapiAnnotationSetText(msg10_annotation, const_cast<char *>(message10.c_str()));
+    if (msg11_annotation) oapiAnnotationSetText(msg11_annotation, const_cast<char *>(message11.c_str()));
+    if (msg12_annotation) oapiAnnotationSetText(msg12_annotation, const_cast<char *>(message12.c_str()));
 
 }

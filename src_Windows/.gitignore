@@ -1,0 +1,4 @@
+HEADERS/
+build/
+UCFO-cppcheck-build-dir/
+UCFO.cppcheck

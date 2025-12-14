@@ -14,10 +14,11 @@ void UCFO::SetAnnotation_Messages(){
 
     std::string message3, message4, message5, message6;
     std::string message7 = "Steer with rudder controls";
-    std::string message8 = "Brake with spacebar";
-    std::string message9 = "Shift forward/reverse with comma (,) and period (.)";
-    std::string message10 = "Switch between forward view (F) and tire view (V)";
-    std::string message11 = "Toggle headlights with L";
+    std::string message8 = "Right ALT + M to display UACS HUD";
+    std::string message9 = "Brake with spacebar";
+    std::string message10 = "Shift forward/reverse with comma (,) and period (.)";
+    std::string message11 = "Switch between forward view (F) and tire view (V)";
+    std::string message12 = "Toggle headlights with L";
 
     if (drive_status == 'F') {
         message3 = "D";
@@ -38,5 +39,6 @@ void UCFO::SetAnnotation_Messages(){
     if (msg9_annotation) oapiAnnotationSetText(msg9_annotation, message9.c_str());
     if (msg10_annotation) oapiAnnotationSetText(msg10_annotation, message10.c_str());
     if (msg11_annotation) oapiAnnotationSetText(msg11_annotation, message11.c_str());
+    if (msg12_annotation) oapiAnnotationSetText(msg12_annotation, message12.c_str());
 
 }

@@ -1,4 +1,4 @@
-#include "main.h"
+#include "main.hpp"
 
 VECTOR3 UCFO::GetHelp_RotatePitch(VECTOR3 point, double pitch){
 
@@ -12,12 +12,12 @@ VECTOR3 UCFO::GetHelp_RotatePitch(VECTOR3 point, double pitch){
     double m13 = 0.0;
 
     double m21 = 0.0;
-    double m22 = std::cos(pitch);
-    double m23 = std::sin(pitch);
+    double m22 = cos(pitch);
+    double m23 = sin(pitch);
 
     double m31 = 0.0;
-    double m32 = -std::sin(pitch);
-    double m33 = std::cos(pitch);
+    double m32 = -sin(pitch);
+    double m33 = cos(pitch);
 
     MATRIX3 rot_matrix = {
             m11, m12, m13,
@@ -37,17 +37,17 @@ VECTOR3 UCFO::GetHelp_RotateYaw(VECTOR3 point, double yaw){
 
     --populate rotation matrix */
 
-    double m11 = std::cos(yaw);
+    double m11 = cos(yaw);
     double m12 = 0.0;
-    double m13 = -std::sin(yaw);
+    double m13 = -sin(yaw);
 
     double m21 = 0.0;
     double m22 = 1.0;
     double m23 = 0.0;
 
-    double m31 = std::sin(yaw);
+    double m31 = sin(yaw);
     double m32 = 0.0;
-    double m33 = std::cos(yaw);
+    double m33 = cos(yaw);
 
     MATRIX3 rot_matrix = {
             m11, m12, m13,
@@ -68,12 +68,12 @@ VECTOR3 UCFO::GetHelp_RotateBank(VECTOR3 point, double bank){
 
     --populate rotation matrix */
 
-    double m11 = std::cos(bank);
-    double m12 = std::sin(bank);
+    double m11 = cos(bank);
+    double m12 = sin(bank);
     double m13 = 0.0;
 
-    double m21 = -std::sin(bank);
-    double m22 = std::cos(bank);
+    double m21 = -sin(bank);
+    double m22 = cos(bank);
     double m23 = 0.0;
 
     double m31 = 0.0;
@@ -109,52 +109,55 @@ void UCFO::GetHelp_NormalForce(){
 
     //Determine location of vehicle contact points in rotated vessel frame
 
-    front_right_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
+    front_right_wheel_contact_local = GetHelp_Rotate(front_right_wheel_contact, pitch, yaw, bank);
     front_left_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
 
-    rear_right_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
-    rear_left_wheel_contact_local = GetHelp_Rotate(front_left_wheel_contact, pitch, yaw, bank);
+    rear_right_wheel_contact_local = GetHelp_Rotate(rear_right_wheel_contact, pitch, yaw, bank);
+    rear_left_wheel_contact_local = GetHelp_Rotate(rear_left_wheel_contact, pitch, yaw, bank);
 
-    
     //Determine angle between rotated and local contact points
-    double front_right_tilt_angle = (front_right_wheel_contact_local.y / std::abs(front_right_wheel_contact_local.y)) * std::acos(dotp(front_right_wheel_contact, front_right_wheel_contact_local) / length(front_right_wheel_contact) * length(front_right_wheel_contact_local));
 
-    front_left_tilt_angle = (front_left_wheel_contact_local.y / std::abs(front_left_wheel_contact_local.y)) * std::acos(dotp(front_left_wheel_contact, front_left_wheel_contact_local) / (length(front_left_wheel_contact) * length(front_left_wheel_contact_local)));
+    front_right_tilt_angle = (front_right_wheel_contact_local.y / abs(front_right_wheel_contact_local.y)) * acos(dotp(front_right_wheel_contact, front_right_wheel_contact_local) / length(front_right_wheel_contact) * length(front_right_wheel_contact_local));
 
-    rear_right_tilt_angle = (rear_right_wheel_contact_local.y / std::abs(rear_right_wheel_contact_local.y)) * std::acos(dotp(rear_right_wheel_contact, rear_right_wheel_contact_local) / (length(rear_right_wheel_contact) * length(rear_right_wheel_contact_local)));
 
-    rear_left_tilt_angle = (rear_left_wheel_contact_local.y / std::abs(rear_left_wheel_contact_local.y)) * std::acos(dotp(rear_left_wheel_contact, rear_left_wheel_contact_local) / (length(rear_left_wheel_contact) * length(rear_left_wheel_contact_local)));
+    front_left_tilt_angle = (front_left_wheel_contact_local.y / abs(front_left_wheel_contact_local.y)) * acos(dotp(front_left_wheel_contact, front_left_wheel_contact_local) / (length(front_left_wheel_contact) * length(front_left_wheel_contact_local)));
+
+
+    rear_right_tilt_angle = (rear_right_wheel_contact_local.y / abs(rear_right_wheel_contact_local.y)) * acos(dotp(rear_right_wheel_contact, rear_right_wheel_contact_local) / (length(rear_right_wheel_contact) * length(rear_right_wheel_contact_local)));
+
+
+    rear_left_tilt_angle = (rear_left_wheel_contact_local.y / abs(rear_left_wheel_contact_local.y)) * acos(dotp(rear_left_wheel_contact, rear_left_wheel_contact_local) / (length(rear_left_wheel_contact) * length(rear_left_wheel_contact_local)));
 
 
     //Determine strut displacement from tilt angle using right triangle
 
-    front_right_displacement = length(front_right_wheel_contact) * std::sin(front_right_tilt_angle);
+    front_right_displacement = length(front_right_wheel_contact) * sin(front_right_tilt_angle);
 
-    front_left_displacement = length(front_left_wheel_contact) * std::sin(front_left_tilt_angle);
+    front_left_displacement = length(front_left_wheel_contact) * sin(front_left_tilt_angle);
 
-    rear_right_displacement = length(rear_right_wheel_contact) * std::sin(rear_right_tilt_angle);
+    rear_right_displacement = length(rear_right_wheel_contact) * sin(rear_right_tilt_angle);
 
-    rear_left_displacement = length(rear_left_wheel_contact) * std::sin(rear_left_tilt_angle);
+    rear_left_displacement = length(rear_left_wheel_contact) * sin(rear_left_tilt_angle);
 
 
     //Determine normal force on each wheel based on displacement and touchdown point stiffnesses
 
-    front_right_wheel_force = std::max((-front_right_displacement + travel) * front_stiffness, 0.0);
+    front_right_wheel_force = max((-front_right_displacement + travel) * front_stiffness, 0.0);
 
-    front_left_wheel_force  = std::max((-front_left_displacement + travel) * front_stiffness, 0.0);
+    front_left_wheel_force  = max((-front_left_displacement + travel) * front_stiffness, 0.0);
 
-    rear_right_wheel_force  = std::max((-rear_right_displacement + travel) * rear_stiffness, 0.0);
+    rear_right_wheel_force  = max((-rear_right_displacement + travel) * rear_stiffness, 0.0);
 
-    rear_left_wheel_force   = std::max((-rear_left_displacement + travel) * rear_stiffness, 0.0);
+    rear_left_wheel_force   = max((-rear_left_displacement + travel) * rear_stiffness, 0.0);
 
 }
 
 void UCFO::GetHelp_WheelAxis(){
 
     //Determine direction of each wheel axis
-    front_right_axle_axis = _V(std::cos(angle_right), 0, -std::sin(angle_right));
+    front_right_axle_axis = _V(cos(angle_right), 0, -sin(angle_right));
 
-    front_left_axle_axis = _V(std::cos(angle_left), 0, -std::sin(angle_left));
+    front_left_axle_axis = _V(cos(angle_left), 0, -sin(angle_left));
 
     rear_right_axle_axis = _V(1, 0, 0);
 
@@ -180,14 +183,41 @@ void UCFO::GetHelp_DynamicFriction(){
 
     //Determine dynamic friction force vector on all wheels in vessel coordinates
 
-    front_right_skid_force = operator*(velFR, -mu_dyn * front_right_wheel_force / length(velFR));
+    /* front_right_skid_force = operator*(velFR, -mu_dyn * front_right_wheel_force / length(velFR)); */
 
-    front_left_skid_force = operator*(velFL, -mu_dyn * front_left_wheel_force / length(velFL));
+    double len_velFR = length(velFR);
+    if (len_velFR > 1e-6) {  // Evita divisiones por valores pequeños
+        front_right_skid_force = operator*(velFR, -mu_dyn * front_right_wheel_force / len_velFR);
+    } else {
+        front_right_skid_force = _V(0, 0, 0);
+    }
 
-    rear_right_skid_force = operator*(velRR, -mu_dyn * rear_right_wheel_force / length(velRR));
+    /* front_left_skid_force = operator*(velFL, -mu_dyn * front_left_wheel_force / length(velFL)); */
 
-    rear_left_skid_force = operator*(velRL, -mu_dyn * rear_left_wheel_force / length(velRL));
+    double len_velFL = length(velFL);
+    if (len_velFL > 1e-6) {  // Evita divisiones por valores pequeños
+        front_left_skid_force = operator*(velFL, -mu_dyn * front_left_wheel_force / len_velFL);
+    } else {
+        front_left_skid_force = _V(0, 0, 0);
+    }
 
+    /* rear_right_skid_force = operator*(velRR, -mu_dyn * rear_right_wheel_force / length(velRR)); */
+
+    double len_velRR = length(velRR);
+    if (len_velRR > 1e-6) {  // Evita divisiones por valores pequeños
+        rear_right_skid_force = operator*(velRR, -mu_dyn * rear_right_wheel_force / len_velRR);
+    } else {
+        rear_right_skid_force = _V(0, 0, 0);
+    }
+
+    /* rear_left_skid_force = operator*(velRL, -mu_dyn * rear_left_wheel_force / length(velRL)); */
+
+    double len_velRL = length(velRL);
+    if (len_velRL > 1e-6) {  // Evita divisiones por valores pequeños
+        rear_left_skid_force = operator*(velRL, -mu_dyn * rear_left_wheel_force / len_velRL);
+    } else {
+        rear_left_skid_force = _V(0, 0, 0);
+    }
 
     //Get lateral component of dynamic friction force vector in wheel coordinates
 
@@ -205,7 +235,7 @@ void UCFO::GetHelp_StaticFriction(){
 
     //Determine lateral wheel forces needed to turn vehicle with no skid at low speeds
 
-    double dt = oapiGetSimStep();
+    dt = oapiGetSimStep();
 
     double shear_modulus = 1e5; //shear modulus of rubber (Pa)
     double contact_area = 0.02;  //Square meters
@@ -213,9 +243,9 @@ void UCFO::GetHelp_StaticFriction(){
 
     double friction_stiffness = shear_modulus * contact_area / tread_depth;
 
-    double friction_damping = std::sqrt(mass * friction_stiffness); //~ Critically damped spring
+    double friction_damping = sqrt(mass * friction_stiffness); //~ Critically damped spring
 
-    float urr = 0.5;
+    double urr = 0.5;
 
     dxFR = urr*dxFR + velFR.x*dt;
     dxFL = urr*dxFL + velFL.x*dt;

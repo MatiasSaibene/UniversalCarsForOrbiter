@@ -1,151 +1,61 @@
 /////////////////////////////////////////////////////
-//Copyright (c)2024 Matías Saibene                 //
+//Copyright (c)2025 Thunder Chicken & Matías Saibene//
 //ORBITER MODULE: UNIVERSAL CARS FOR ORBITER (UCFO)//
 //      Licenced under the MIT Licence             //
-// main.cpp  Main implementation file              //
+//        main.cpp  Main implementation file       //
 /////////////////////////////////////////////////////
-
-#include <algorithm>
+#include "main.hpp"
+#include <GL/gl.h>
+#include <cctype>
 #include <cmath>
 #include <cstddef>
-#include <cstdlib>
-#define ORBITER_MODULE
-#include "main.h"
+#include <optional>
+#include "format"
 
 //Constructor
-UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
+UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel), uacs(this, &vslAstrInfo, &vslCargoInfo){
 
-    vhUCFO = NULL;
+    vhUCFO = nullptr;
 
-    mhUCFO = NULL;
+    mhUCFO = nullptr;
 
-    mhcockpitUCFO = NULL;
+    mhcockpitUCFO = nullptr;
 
-    dmhUCFO = NULL;
-
-    right_rear_wheel_rotation = 0.0;
-
-    right_front_wheel_rotation = 0.0;
-
-    left_rear_wheel_rotation = 0.0;
-
-    left_front_wheel_rotation = 0.0;
-
-    dxFR = 0.0;
-    dxFL = 0.0;
-    dxRR = 0.0;
-    dxRL = 0.0;
-
-    dzFR = 0.0;
-    dzFL = 0.0;
-    dzRR = 0.0;
-    dzRL = 0.0;
-
-    steering_angle = 0.0;
-
-    drive_status = 'F';
+    dmhUCFO = nullptr;
 
     uimesh_UCFO = 0;
 
-    MeshName[0] = '\0';
-
-    size = 0.0;
-
-    empty_mass = 0.0;
-
-    front_left_wheel_id = 0;
-
-    front_right_wheel_id = 0;
-
-    rear_left_wheel_id = 0;
-
-    rear_right_wheel_id = 0;
-
-    steering_wheel_id = 0;
-
-    lvlwheeltrails = 0.0;
-
-    anim_steering_wheel = 0;
-
-    anim_custom_1 = 0;
-
-    anim_custom_2 = 0;
-
-    anim_custom_3 = 0;
-
-    anim_right_front_wheel_rotation = 0;
-
-    anim_left_front_wheel_rotation = 0;
-
-    anim_right_rear_wheel_rotation = 0;
-
-    anim_left_rear_wheel_rotation = 0;
-
-    anim_right_front_wheel_steer = 0;
-
-    anim_left_front_wheel_steer = 0;
-
-    anim_right_front_wheel_travel = 0;
-
-    anim_left_front_wheel_travel = 0;
-
-    anim_right_rear_wheel_travel = 0;
-
-    anim_left_rear_wheel_travel = 0;
+    uimesh_Cockpit = 0;
 
     th_dummy = nullptr;
 
     thg_dummy = nullptr;
 
-    left_headlight_beacon_spec = {0};
+    main_fuel_tank = nullptr;
 
-    right_headlight_beacon_spec = {0};
+    for(int i = 0; i < 12; i++){
 
-    right_tail_light_spec = {0};
+        td_points[i] = {0};
 
-    left_tail_light_spec = {0};
+    }
 
-    left_turning_wheel = {0};
+    mass = 0.0;
 
-    right_turning_wheel = {0};
+    brake_status = '\0';
 
-    beacon = {0};
+    max_weight = 0.0;
 
-    stop_light = {0};
+    max_weight_front = 0.0;
 
-    left_backup_light_spec = {0};
-
-    right_backup_light_spec = {0};
-
-    skin[0] = nullptr;
-
-    skinpath[0] = '\0';
-
-    left_headlight = nullptr;
-
-    right_headlight = nullptr;
-
-    left_tail_light_point = nullptr;
-
-    right_tail_light_point = nullptr;
-
-    sa = 0;
-
-    R = 0.0;
-
-    wheel_base = 0.0;
+    max_weight_rear = 0.0;
 
     angle_right = 0.0;
 
     angle_left = 0.0;
 
-    wheel_track = 0.0;
-
     turn_radius = 0.0;
 
-    max_weight = 0.0;
-
-    main_fuel_tank_max = 0.0;
+    force = 0.0;
 
     pitch = 0.0;
 
@@ -153,43 +63,9 @@ UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
 
     bank = 0.0;
 
-    x = 0.0;
-
-    z = 0.0;
-
-    mass = 0.0;
-
-    Fuel = nullptr;
-
-    max_weight_rear = 0.0;
-
-    max_weight_front = 0.0;
-
     front_stiffness = 0.0;
 
     rear_stiffness = 0.0;
-
-    body_stiffness = 0.0;
-
-    front_damping = 0.0;
-
-    rear_damping = 0.0;
-    
-    body_damping = 0.0;
-
-    front_left_tilt_angle = 0.0;
-
-    rear_right_tilt_angle = 0.0;
-
-    rear_left_tilt_angle = 0.0;
-
-    rear_left_tilt_angle = 0.0;
-
-    rear_left_tilt_angle = 0.0;
-
-    rear_left_tilt_angle = 0.0;
-
-    rear_left_displacement = 0.0;
 
     front_right_wheel_force = 0.0;
 
@@ -207,19 +83,263 @@ UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
 
     RL_status = '\0';
 
-    headlight_status = '\0';
+    dxFR = 0.0;
+    dxFL = 0.0;
+    dxRR = 0.0;
+    dxRL = 0.0;
+
+    dzFR = 0.0;
+    dzFL = 0.0;
+    dzRR = 0.0;
+    dzRL = 0.0;
+
+    steering_angle = 0.0;
+
+    drive_status = 'F';
+
+    TDP1 = _V(0, 0, 0);
+    TDP2 = _V(0, 0, 0);
+    TDP3 = _V(0, 0, 0);
+    TDP4 = _V(0, 0, 0);
+    TDP5 = _V(0, 0, 0);
+    TDP6 = _V(0, 0, 0);
+    TDP7 = _V(0, 0, 0);
+    TDP8 = _V(0, 0, 0);
+    
+    wv = _V(0, 0, 0);
+
+    wheel_base = 0.0;
+
+    wheel_track = 0.0;
+
+    displacement = 0.0;;
+    n_rev = 0.0;
+    r = 0.0; //Compression ratio
+    idle_rpm = 0.0;
+    max_rpm = 0.0;
+
+    k = 0.0; //polytropic specific heat ratio
+    cp_air = 0.0; //specific heat of air J/kg K
+
+    HV = 0.0; //lower heating value of gasoline J/kg
+    AF = 0.0; //stochiometric fuel air ratio for gasoline
+
+    air_density = 0.0;
+
+    air_temp = 0.0;
+
+    gsv = _V(0, 0, 0);
+
+    dt = 0.0;
+
+    front_right_wheel_contact = _V(0, 0, 0);
+    front_left_wheel_contact = _V(0, 0, 0);
+    rear_right_wheel_contact = _V(0, 0, 0);
+    rear_left_wheel_contact = _V(0, 0, 0);
+
+    vel = _V(0, 0, 0);
+
+    omega = _V(0, 0, 0);
+
+    front_right_axle_axis = _V(0, 0, 0);
+    front_left_axle_axis = _V(0, 0, 0);
+    rear_right_axle_axis = _V(0, 0, 0);
+    rear_left_axle_axis = _V(0, 0, 0);
+
+    velFR = _V(0, 0, 0);
+    velFL = _V(0, 0, 0);
+    velRR = _V(0, 0, 0);
+    velRL = _V(0, 0, 0);
+
+    front_right_skid_force = _V(0, 0, 0);
+    front_left_skid_force = _V(0, 0, 0);
+    rear_right_skid_force = _V(0, 0, 0);
+    rear_left_skid_force = _V(0, 0, 0);
+
+    front_right_skid_force_axis = _V(0, 0, 0);
+    front_left_skid_force_axis = _V(0, 0, 0);
+    rear_right_skid_force_axis = _V(0, 0, 0);
+    rear_left_skid_force_axis = _V(0, 0, 0);
+
+    front_right_turning_force = _V(0, 0, 0);
+    front_left_turning_force = _V(0, 0, 0);
+    rear_right_turning_force = _V(0, 0, 0);
+    rear_left_turning_force = _V(0, 0, 0);
+
+    front_right_turning_force_axis = _V(0, 0, 0);
+    front_left_turning_force_axis = _V(0, 0, 0);
+    rear_right_turning_force_axis = _V(0, 0, 0);
+    rear_left_turning_force_axis = _V(0, 0, 0);
+
+    front_right_wheel_contact_local = _V(0, 0, 0);
+    front_left_wheel_contact_local = _V(0, 0, 0);
+    rear_right_wheel_contact_local = _V(0, 0, 0);
+    rear_left_wheel_contact_local = _V(0, 0, 0);
+
+    front_right_tilt_angle = 0.0;
+    front_left_tilt_angle = 0.0;
+    rear_right_tilt_angle = 0.0;
+    rear_left_tilt_angle = 0.0;
+
+    //Determine strut displacement from tilt angle using right triangle
 
     front_right_displacement = 0.0;
-
     front_left_displacement = 0.0;
-
     rear_right_displacement = 0.0;
+    rear_left_displacement = 0.0;
 
-    for(int i = 0; i < ntdvtx_td_points; i++){
+    msg1_annotation = nullptr;
+    msg2_annotation = nullptr;
+    msg3_annotation = nullptr;
+    msg4_annotation = nullptr;
+    msg5_annotation = nullptr;
+    msg6_annotation = nullptr;
+    msg7_annotation = nullptr;
+    msg8_annotation = nullptr;
+    msg9_annotation = nullptr;
+    msg10_annotation = nullptr;
+    msg11_annotation = nullptr;
+    msg12_annotation = nullptr;
 
-        td_points[i] = {0};
+    anim_right_front_wheel_rotation = 0;
 
-    }
+    anim_left_front_wheel_rotation = 0;
+
+    anim_right_rear_wheel_rotation = 0;
+
+    anim_left_rear_wheel_rotation = 0;
+
+    //anim_right_front_wheel_steer = 0;
+
+    //anim_left_front_wheel_steer = 0;
+
+    //anim_right_front_wheel_travel = 0;
+
+    //anim_left_front_wheel_travel = 0;
+
+    //anim_right_rear_wheel_travel = 0;
+
+    //anim_left_rear_wheel_travel = 0;
+
+    right_rear_wheel_rotation = 0.0;
+
+    right_front_wheel_rotation = 0.0;
+
+    left_rear_wheel_rotation = 0.0;
+
+    left_front_wheel_rotation = 0.0;
+
+    //right_front_wheel_travel = nullptr;
+
+    //right_front_wheel_steer = nullptr;
+
+    right_front_wheel_rotate = nullptr;
+
+    MeshName[0] = '\0';
+
+    size = 0.0;
+
+    empty_mass = 0.0;
+
+    main_fuel_tank_max = 0.0;
+
+    front_left_wheel_id = 0;
+
+    front_right_wheel_id = 0;
+
+    rear_right_wheel_id = 0;
+
+    rear_left_wheel_id = 0;
+
+    travel = 0.0;
+
+    wheel_radius = 0.0;
+
+    left_front_wheel_rotate = nullptr;
+
+    //left_front_wheel_travel = nullptr;
+
+    //left_front_wheel_steer = nullptr;
+
+    //left_rear_wheel_travel = nullptr;
+
+    left_rear_wheel_rotate = nullptr;
+
+    //right_rear_wheel_travel = nullptr;
+
+    right_rear_wheel_rotate = nullptr;
+
+    headlight_status = '\0';
+
+    lvlwheeltrails = 0.0;
+
+    left_headlight_beacon_spec = {0};
+
+    right_headlight_beacon_spec = {0};
+
+    right_tail_light_spec = {0};
+
+    left_tail_light_spec = {0};
+
+    left_backup_light_spec = {0};
+
+    right_backup_light_spec = {0};
+
+    left_headlight = nullptr;
+
+    right_headlight = nullptr;
+
+    left_tail_light_point = nullptr;
+
+    right_tail_light_point = nullptr;
+
+    left_backup_light_point = nullptr;
+
+    right_backup_light_point = nullptr;
+
+    pBrake = false;
+
+    ExitPosition1 = _V(0, 0, 0);
+
+    CargoSlotPos = _V(0, 0, 0);
+
+    cargoHUD.msg = std::format("UACS version: {}", uacs.GetUACSVersion());
+    cargoHUD.timer = 0;
+
+    left_headlight_pos = _V(0, 0, 0);
+    right_headlight_pos = _V(0, 0, 0);
+
+    left_tail_light_pos = _V(0, 0, 0);
+    right_tail_light_pos = _V(0, 0, 0);
+
+    left_backup_pos = _V(0, 0, 0);
+    right_backup_pos = _V(0, 0, 0);
+
+    front_left_wheel_pos = _V(0, 0, 0);
+    front_right_wheel_pos = _V(0, 0, 0);
+
+    rear_left_wheel_pos = _V(0, 0, 0);
+    rear_right_wheel_pos = _V(0, 0, 0);
+
+    camera_pos = _V(0, 0, 0);
+}
+
+//Destructor
+UCFO::~UCFO(){
+
+    /* vhUCFO = nullptr;
+
+    mhUCFO = nullptr;
+
+    mhcockpitUCFO = nullptr;
+
+    dmhUCFO = nullptr;
+
+    th_dummy = nullptr;
+
+    thg_dummy = nullptr;
+
+    main_fuel_tank = nullptr;
 
     msg1_annotation = nullptr;
     msg2_annotation = nullptr;
@@ -233,428 +353,309 @@ UCFO::UCFO(OBJHANDLE hVessel, int flightmodel) : VESSEL4(hVessel, flightmodel){
     msg10_annotation = nullptr;
     msg11_annotation = nullptr;
 
+    right_front_wheel_travel = nullptr;
+
+    right_front_wheel_rotate = nullptr;
+
+    front_left_wheel_id = nullptr;
+
+    front_right_wheel_id = nullptr;
+
+    rear_right_wheel_id = nullptr;
+
+    rear_left_wheel_id = nullptr;
+
+    left_front_wheel_rotate = nullptr;
+
+    left_front_wheel_travel = nullptr;
+
+    left_rear_wheel_travel = nullptr;
+
+    left_rear_wheel_rotate = nullptr;
+
+    right_rear_wheel_travel = nullptr;
+
+    right_rear_wheel_rotate = nullptr;
+
+    left_headlight = nullptr;
+
+    right_headlight = nullptr;
+
+    left_tail_light_point = nullptr;
+
+    right_tail_light_point = nullptr;
+
+    left_backup_light_point = nullptr;
+
+    right_backup_light_point = nullptr;
+
+    delete front_left_wheel_id;
+    front_left_wheel_id = nullptr;
+
+    delete front_right_wheel_id;
+    front_right_wheel_id = nullptr;
+
+    delete rear_left_wheel_id;
+    rear_left_wheel_id = nullptr;
+
+    delete rear_right_wheel_id;
+    rear_right_wheel_id = nullptr;
+
+    delete right_front_wheel_rotate;
+    right_front_wheel_rotate = nullptr;
+
+    delete right_front_wheel_travel;
+    right_front_wheel_travel = nullptr;
+
+    delete left_front_wheel_rotate; 
+    left_front_wheel_rotate = nullptr;
+
+    delete left_front_wheel_travel;
+    left_front_wheel_travel = nullptr;
+
+    delete right_rear_wheel_rotate;
+    right_rear_wheel_rotate = nullptr;
+
+    delete right_rear_wheel_travel;
+    right_rear_wheel_travel = nullptr;
+
+    delete left_rear_wheel_rotate;
+    left_rear_wheel_rotate = nullptr;
+
+    delete left_rear_wheel_travel;
+    left_rear_wheel_travel = nullptr; */
 }
 
-//Destructor
-UCFO::~UCFO(){
-
-}
 
 void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
     //Get vessel parameters from configuration file,
     //and set the physical vessel parameters.
 
-    char chmesh[5] = "Mesh";
-
-    if(!oapiReadItem_string(cfg, chmesh, MeshName)){
-        TerminateAtError("%s: Mesh %s", GetName(), "car");
+    if(!oapiReadItem_string(cfg, const_cast<char *>("Mesh"), MeshName)){
+        TerminateAtError("%s: Mesh: %s", GetName(), "car");
     }
     oapiWriteLogV("%s: Mesh: %s", GetName(), MeshName);
 
     mhUCFO = oapiLoadMeshGlobal(MeshName);
     uimesh_UCFO = AddMesh(mhUCFO);
-    VECTOR3 mesh_origin = _V(0, 0, 0);
     SetMeshVisibilityMode(uimesh_UCFO, MESHVIS_ALWAYS);
 
-    char chsize[5] = "Size";
-   
-    if(!oapiReadItem_float(cfg, chsize, size)){
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("Size"), size)){
         TerminateAtError("Size", GetName(), "car");
-
     }
-    oapiWriteLogV("%s: Size: %f", GetName(), size);
-
     SetSize(size);
 
 
-    char chmass[5] = "Mass";
-
-    if(!oapiReadItem_float(cfg, chmass, empty_mass)){
-
-        TerminateAtError("Mass", GetName(), "car");
-
-    }
-
-    oapiWriteLogV("%s: Mass: %f", GetName(), empty_mass);
-    
+    if(!oapiReadItem_float(cfg, const_cast<char *>("Mass"), empty_mass)){
+		TerminateAtError("Mass", GetName(), "car");
+	}
     SetEmptyMass(empty_mass);
 
-    
-    char chFrontLeftWheelID[17] = "FrontLeftWheelID";
 
-    if(!oapiReadItem_int(cfg, chFrontLeftWheelID, front_left_wheel_id)){
+    if(!oapiReadItem_float(cfg, const_cast<char *>("Fuel"), main_fuel_tank_max)){
+        TerminateAtError("Fuel", GetName(), "car");
+    }
+    main_fuel_tank = CreatePropellantResource(main_fuel_tank_max);
 
-        TerminateAtError("FrontLeftWheelID", GetName(), "car");
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("Displacement"), displacement)){
+        TerminateAtError("Displacement", GetName(), "car");
     }
 
-    oapiWriteLogV("%s: FrontLeftWheelID: %d", GetName(), front_left_wheel_id);
-    
-
-    char chFrontRightWheelID[18] = "FrontRightWheelID";
-    if(!oapiReadItem_int(cfg, chFrontRightWheelID, front_right_wheel_id)){
-
-        TerminateAtError("FrontRightWheelID", GetName(), "car");
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("Compression"), r)){
+        TerminateAtError("Compression", GetName(), "car");
     }
-    oapiWriteLogV("%s: FrontRightWheelID: %d", GetName(), front_right_wheel_id);
 
-
-    char chRearRightWheelID[17] = "RearRightWheelID";
-    if(!oapiReadItem_int(cfg, chRearRightWheelID, rear_right_wheel_id)){
-
-        TerminateAtError("RearRightWheelID", GetName(), "car");
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("MaxRPM"), max_rpm)){
+        TerminateAtError("MaxRPM", GetName(), "car");
     }
-    oapiWriteLogV("%s: RearRightWheelID: %d", GetName(), rear_right_wheel_id);
 
-
-    char chRearLeftWheelID[17] = "RearLeftWheelID";
-    if(!oapiReadItem_int(cfg, chRearLeftWheelID, rear_left_wheel_id)){
-
-        TerminateAtError("RearLeftWheelID", GetName(), "car");
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("IdleRPM"), idle_rpm)){
+        TerminateAtError("IdleRPM", GetName(), "car");
     }
-    oapiWriteLogV("%s: RearLeftWheelID: %d", GetName(), rear_left_wheel_id);
 
-
-    char chFrontLeftWheelPosition[23] = "FrontLeftWheelPosition";
-    if(!oapiReadItem_vec(cfg, chFrontLeftWheelPosition, front_left_wheel_pos)){
-
-        TerminateAtError("FrontLeftWheelPosition", GetName(), "car");
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("WheelRadius"), wheel_radius)){
+        TerminateAtError("WheelRadius", GetName(), "car");
     }
-    oapiWriteLogV("FrontLeftWheelPosition %lf, %lf, %lf",
-        front_left_wheel_pos.x,
-        front_left_wheel_pos.y,
-        front_left_wheel_pos.z);
-    
-    
-    char chFrontRightWheelPosition[24] = "FrontRightWheelPosition";
-    if(!oapiReadItem_vec(cfg, chFrontRightWheelPosition, front_right_wheel_pos)){
 
-        TerminateAtError("FrontRightWheelPosition", GetName(), "car");
-
+    if(!oapiReadItem_float(cfg, const_cast<char *>("Travel"), travel)){
+        TerminateAtError("Travel", GetName(), "car");
     }
-    oapiWriteLogV("FrontRightWheelPosition %lf, %lf, %lf",
-        front_right_wheel_pos.x,
-        front_right_wheel_pos.y,
-        front_right_wheel_pos.z);
 
-    char chRearLeftWheelPosition[22] = "RearLeftWheelPosition";
-    if(!oapiReadItem_vec(cfg, chRearLeftWheelPosition, rear_left_wheel_pos)){
-     
-        TerminateAtError("RearLeftWheelPosition", GetName(), "car");
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("LeftHeadlightPosition"), left_headlight_pos)){
+		TerminateAtError("LeftHeadlightPosition", GetName(), "car");
+	}
 
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("RightHeadlightPosition"), right_headlight_pos)){
+		TerminateAtError("RightHeadlightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("LeftTailLightPosition"), left_tail_light_pos)){
+		TerminateAtError("LeftTailLightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("RightTailLightPosition"), right_tail_light_pos)){
+		TerminateAtError("RightTailLightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("LeftBackupLightPosition"), left_backup_pos)){
+		TerminateAtError("LeftBackupLightPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("RightBackupLightPosition"), right_backup_pos)){
+		TerminateAtError("RightBackupLightPosition", GetName(), "car");
+	}
+
+    int id_front_left_wheel = 0;
+    if(!oapiReadItem_int(cfg, const_cast<char *>("FrontLeftWheelID"), id_front_left_wheel)){
+		TerminateAtError("FrontLeftWheelID", GetName(), "car");
+	}
+    front_left_wheel_id = id_front_left_wheel; 
+    oapiWriteLogV("%s: FrontLeftWheelID: %d", GetName(), &front_left_wheel_id);
+
+    int id_front_right_wheel = 0;
+    if(!oapiReadItem_int(cfg, const_cast<char *>("FrontRightWheelID"), id_front_right_wheel)){
+		TerminateAtError("FrontRightWheelID", GetName(), "car");
+	}
+    front_right_wheel_id = id_front_right_wheel;
+    oapiWriteLogV("%s: FrontRightWheelID: %d", GetName(), &front_right_wheel_id);
+
+    int id_rear_left_wheel = 0;
+    if(!oapiReadItem_int(cfg, const_cast<char *>("RearLeftWheelID"), id_rear_left_wheel)){
+		TerminateAtError("RearLeftWheelID", GetName(), "car");
+	}
+    rear_left_wheel_id = id_rear_left_wheel;
+    oapiWriteLogV("%s: RearLeftWheelID: %d", GetName(), &rear_left_wheel_id);
+
+    int id_rear_right_wheel = 0;
+    if(!oapiReadItem_int(cfg, const_cast<char *>("RearRightWheelID"), id_rear_right_wheel)){
+		TerminateAtError("RearRightWheelID", GetName(), "car");
+	}
+    id_rear_right_wheel = rear_right_wheel_id;
+    oapiWriteLogV("%s: RearRightWheelID: %d", GetName(), &rear_right_wheel_id);
+
+
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("FrontLeftWheelPosition"), front_left_wheel_pos)){
+		TerminateAtError("FrontLeftWheelPosition", GetName(), "car");
+	}
+
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("FrontRightWheelPosition"), front_right_wheel_pos)){
+		TerminateAtError("FrontRightWheelPosition", GetName(), "car");
+	}
+
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("RearLeftWheelPosition"), rear_left_wheel_pos)){
+		TerminateAtError("RearLeftWheelPosition", GetName(), "car");
+	}
+
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("RearRightWheelPosition"), rear_right_wheel_pos)){
+		TerminateAtError("RearRightWheelPosition", GetName(), "car");
+	}
+
+
+
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("CameraPosition"), camera_pos)){
+		TerminateAtError("CameraPosition", GetName(), "car");
+	}
+
+	SetCameraOffset(camera_pos);
+
+
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("ExitPosition1"), ExitPosition1)){
+        TerminateAtError("ExitPosition1", GetName(), "car");
     }
-    oapiWriteLogV("RearLeftWheelPosition %lf, %lf, %lf",
-        rear_left_wheel_pos.x,
-        rear_left_wheel_pos.y,
-        rear_left_wheel_pos.z);
-    
-    
-    char chRearRightWheelPosition[23] = "RearRightWheelPosition";
-    if(!oapiReadItem_vec(cfg, chRearRightWheelPosition, rear_right_wheel_pos)){
 
-        TerminateAtError("RearRightWheelPosition", GetName(), "car");
 
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("CargoSlotPos"), CargoSlotPos)){
+        NotifyInLog("CargoSlotPos", GetName(), "car");
     }
-    oapiWriteLogV("RearRightWheelPosition %lf, %lf, %lf",
-        rear_right_wheel_pos.x,
-        rear_right_wheel_pos.y,
-        rear_right_wheel_pos.z);
 
 
-    char chLeftHeadlightPosition[22] = "LeftHeadlightPosition";
-    if(!oapiReadItem_vec(cfg, chLeftHeadlightPosition, left_headlight_pos)){
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("FrontRightWheelContact"), front_right_wheel_contact)){
+		TerminateAtError("FrontRightWheelContact", GetName(), "car");
+	}
 
-        TerminateAtError("LeftHeadlightPosition", GetName(), "car");
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("FrontLeftWheelContact"), front_left_wheel_contact)){
+		TerminateAtError("FrontLeftWheelContact", GetName(), "car");
+	}
 
-    }
-    oapiWriteLogV("LeftHeadlightPosition %lf, %lf, %lf",
-        left_headlight_pos.x,
-        left_headlight_pos.y,
-        left_headlight_pos.z);
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("RearRightWheelContact"), rear_right_wheel_contact)){
+		TerminateAtError("RearRightWheelContact", GetName(), "car");
+	}
 
-    
-    char chRightHeadlightPosition[23] = "RightHeadlightPosition";
-    if(!oapiReadItem_vec(cfg, chRightHeadlightPosition, right_headlight_pos)){
-
-        TerminateAtError("RightHeadlightPosition", GetName(), "car");
-
-    }
-    oapiWriteLogV("RightHeadlightPosition %lf, %lf, %lf",
-        right_headlight_pos.x,
-        right_headlight_pos.y,
-        right_headlight_pos.z);
-
-    
-    char chLeftTailLightPosition[22] = "LeftTailLightPosition";
-    if(!oapiReadItem_vec(cfg, chLeftTailLightPosition, left_tail_light_pos)){
-
-        TerminateAtError("LeftTailLightPosition", GetName(), "car");
-
-    }
-    oapiWriteLogV("LeftTailLightPosition %lf, %lf, %lf",
-        left_tail_light_pos.x,
-        left_tail_light_pos.y,
-        left_tail_light_pos.z);
-    
-
-    char chRightTailLightPosition[23] = "RightTailLightPosition";
-    if(!oapiReadItem_vec(cfg, chRightTailLightPosition, right_tail_light_pos)){
-
-        TerminateAtError("RightTailLightPosition", GetName(), "car");
-
-    }
-    oapiWriteLogV("RightTailLightPosition %lf, %lf, %lf",
-        right_tail_light_pos.x,
-        right_tail_light_pos.y,
-        right_tail_light_pos.z);
-
-    
-    char chLeftBackupLightPosition[24] = "LeftBackupLightPosition";
-    if(!oapiReadItem_vec(cfg, chLeftBackupLightPosition, left_backup_pos)){
-
-        TerminateAtError("LeftBackupLightPosition", GetName(), "car");
-
-    }
-    oapiWriteLogV("LeftBackupLightPosition %lf, %lf, %lf",
-        left_backup_pos.x,
-        left_backup_pos.y,
-        left_backup_pos.z);
-
-    
-    char chRightBackupLightPosition[25] = "RightBackupLightPosition";
-    if(!oapiReadItem_vec(cfg, chRightBackupLightPosition, right_backup_pos)){
-
-        TerminateAtError("RightBackupLightPosition", GetName(), "car");
-
-    }
-    oapiWriteLogV("RightBackupLightPosition %lf, %lf, %lf",
-        right_backup_pos.x,
-        right_backup_pos.y,
-        right_backup_pos.z);
-
-    
-    char chCameraPosition[15] = "CameraPosition";
-    if(!oapiReadItem_vec(cfg, chCameraPosition, camera_pos)){
-    
-        TerminateAtError("CameraPosition", GetName(), "car");
-
-    }
-    oapiWriteLogV("CameraPosition %lf, %lf, %lf",
-        camera_pos.x,
-        camera_pos.y,
-        camera_pos.z);
-
-    SetCameraOffset(camera_pos);
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("RearLeftWheelContact"), rear_left_wheel_contact)){
+		TerminateAtError("RearLeftWheelContact", GetName(), "car");
+	}
 
 
-    char chFrontRightWheelAxle[20] = "FrontRightWheelAxle";
-    if(!oapiReadItem_vec(cfg, chFrontRightWheelAxle, front_right_wheel_axle)){
+    if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint1"), TDP1)){
+		TerminateAtError("TouchdownPoint1", GetName(), "car");
+	}
 
-        TerminateAtError("FrontRightWheelAxle", GetName(), "car");
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint2"), TDP2)){
+		TerminateAtError("TouchdownPoint2", GetName(), "car");
+	}
+	
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint3"), TDP3)){
+		TerminateAtError("TouchdownPoint3", GetName(), "car");
+	}
 
-    }
-    oapiWriteLogV("FrontRightWheelAxle %lf, %lf, %lf",
-        front_right_wheel_axle.x,
-        front_right_wheel_axle.y,
-        front_right_wheel_axle.z);
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint4"), TDP4)){
+		TerminateAtError("TouchdownPoint4", GetName(), "car");
+	}
 
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint5"), TDP5)){
+		TerminateAtError("TouchdownPoint5", GetName(), "car");
+	}
 
-    char chFrontLeftWheelAxle[19] = "FrontLeftWheelAxle";
-    if(!oapiReadItem_vec(cfg, chFrontLeftWheelAxle, front_left_wheel_axle)){
-     
-        TerminateAtError("FrontLeftWheelAxle", GetName(), "car");
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint6"), TDP6)){
+		TerminateAtError("TouchdownPoint6", GetName(), "car");
+	}
 
-    }
-    oapiWriteLogV("FrontLeftWheelAxle %lf, %lf, %lf",
-        front_left_wheel_axle.x,
-        front_left_wheel_axle.y,
-        front_left_wheel_axle.z);
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint7"), TDP7)){
+		TerminateAtError("TouchdownPoint7", GetName(), "car");
+	}
 
+	if(!oapiReadItem_vec(cfg, const_cast<char *>("TouchdownPoint8"), TDP8)){
+		TerminateAtError("TouchdownPoint8", GetName(), "car");
+	}
 
-    char chRearRightWheelAxle[19] = "RearRightWheelAxle";
-    if(!oapiReadItem_vec(cfg, chRearRightWheelAxle, rear_right_wheel_axle)){
-
-        TerminateAtError("RearRightWheelAxle", GetName(), "car");
-
-    }
-    oapiWriteLogV("RearRightWheelAxle %lf, %lf, %lf",
-        rear_right_wheel_axle.x,
-        rear_right_wheel_axle.y,
-        rear_right_wheel_axle.z);
-
-
-    char chRearLeftWheelAxle[18] = "RearLeftWheelAxle";
-    if(!oapiReadItem_vec(cfg, chRearLeftWheelAxle, rear_left_wheel_axle)){
-     
-        TerminateAtError("RearLeftWheelAxle", GetName(), "car");
-
-    }
-    oapiWriteLogV("RearLeftWheelAxle %lf, %lf, %lf",
-        rear_left_wheel_axle.x,
-        rear_left_wheel_axle.y,
-        rear_left_wheel_axle.z);
-
-    
-    char chFrontRightWheelContact[23] = "FrontRightWheelContact";
-    if(!oapiReadItem_vec(cfg, chFrontRightWheelContact, front_right_wheel_contact)){
-
-        TerminateAtError("FrontRightWheelContact", GetName(), "car");
-
-    }
-    oapiWriteLogV("FrontRightWheelContact %lf, %lf, %lf",
-        front_right_wheel_contact.x,
-        front_right_wheel_contact.y,
-        front_right_wheel_contact.z);
-
-
-    char chFrontLeftWheelContact[22] = "FrontLeftWheelContact";
-    if(!oapiReadItem_vec(cfg, chFrontLeftWheelContact, front_left_wheel_contact)){
-    
-        TerminateAtError("FrontLeftWheelContact", GetName(), "car");
-
-    }
-    oapiWriteLogV("FrontLeftWheelContact %lf, %lf, %lf",
-        front_left_wheel_contact.x,
-        front_left_wheel_contact.y,
-        front_left_wheel_contact.z);
-
-
-    char chRearRightWheelContact[22] = "RearRightWheelContact";
-    if(!oapiReadItem_vec(cfg, chRearRightWheelContact, rear_right_wheel_contact)){
-        
-        TerminateAtError("RearRightWheelContact", GetName(), "car");
-
-    }
-    oapiWriteLogV("RearRightWheelContact %lf, %lf, %lf",
-        rear_right_wheel_contact.x,
-        rear_right_wheel_contact.y,
-        rear_right_wheel_contact.z);
-
-
-    char chRearLeftWheelContact[21] = "RearLeftWheelContact";
-    if(!oapiReadItem_vec(cfg, chRearLeftWheelContact, rear_left_wheel_contact)){
-     
-        TerminateAtError("RearLeftWheelContact", GetName(), "car");
-
-    }
-    oapiWriteLogV("RearLeftWheelContact %lf, %lf, %lf",
-        rear_left_wheel_contact.x,
-        rear_left_wheel_contact.y,
-        rear_left_wheel_contact.z);
-
-
-
-    char chTouchdownPoint1[16] = "TouchdownPoint1";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint1, TDP1)){
-     
-        TerminateAtError("TouchdownPoint1", GetName(), "car");
-
-    }
-    oapiWriteLogV("TouchdownPoint1 %lf, %lf, %lf",
-        TDP1.x,
-        TDP1.y,
-        TDP1.z);
-
-
-    char chTouchdownPoint2[16] = "TouchdownPoint2";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint2, TDP2)){
-     
-        TerminateAtError("TouchdownPoint2", GetName(), "car");
-    
-    }
-    oapiWriteLogV("TouchdownPoint2 %lf, %lf, %lf",
-        TDP2.x,
-        TDP2.y,
-        TDP2.z);
-
-
-    char chTouchdownPoint3[16] = "TouchdownPoint3";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint3, TDP3)){
-     
-        TerminateAtError("TouchdownPoint3", GetName(), "car");
-        
-    }
-    oapiWriteLogV("TouchdownPoint3 %lf, %lf, %lf",
-        TDP3.x,
-        TDP3.y,
-        TDP3.z);    
-
-    
-    char chTouchdownPoint4[16] = "TouchdownPoint4";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint4, TDP4)){
-     
-        TerminateAtError("TouchdownPoint4", GetName(), "car");
-    
-    }
-    oapiWriteLogV("TouchdownPoint4 %lf, %lf, %lf",
-        TDP4.x,
-        TDP4.y,
-        TDP4.z);
-    
-    
-    char chTouchdownPoint5[16] = "TouchdownPoint5";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint5, TDP5)){
-         
-        TerminateAtError("TouchdownPoint5", GetName(), "car");
-        
-    }
-    oapiWriteLogV("TouchdownPoint5 %lf, %lf, %lf",
-        TDP5.x,
-        TDP5.y,
-        TDP5.z);
-    
-    
-    char chTouchdownPoint6[16] = "TouchdownPoint6";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint6, TDP6)){
-         
-        TerminateAtError("TouchdownPoint6", GetName(), "car");
-            
-    }
-    oapiWriteLogV("TouchdownPoint6 %lf, %lf, %lf",
-        TDP6.x,
-        TDP6.y,
-        TDP6.z);
-
-    
-    char chTouchdownPoint7[16] = "TouchdownPoint7";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint7, TDP7)){
-         
-        TerminateAtError("TouchdownPoint7", GetName(), "car");
-                
-    }
-    oapiWriteLogV("TouchdownPoint7 %lf, %lf, %lf",
-        TDP7.x,
-        TDP7.y,
-        TDP7.z);
-
-
-    char chTouchdownPoint8[16] = "TouchdownPoint8";
-    if(!oapiReadItem_vec(cfg, chTouchdownPoint8, TDP8)){
-
-        TerminateAtError("TouchdownPoint8", GetName(), "car");
-
-    }
-    oapiWriteLogV("TouchdownPoint8 %lf, %lf, %lf",
-        TDP8.x,
-        TDP8.y,
-        TDP8.z);
-
-    Fuel = CreatePropellantResource(UCFO_FUEL_MASS);
 
     //Dummy thruster to provide throttle input to engine model. 1 N thrust is to allow thruster status
     //to indicate throttle position
 
-    th_dummy = CreateThruster(ENGINE_LOCATION, FORWARD_DIRECTION, 1, Fuel, INFINITY);
-
+    th_dummy = CreateThruster(_V(0, 0, 0), _V(0, 1, 0), 1, main_fuel_tank, INFINITY);
     thg_dummy = CreateThrusterGroup(&th_dummy, 1, THGROUP_MAIN);
 
-    //SetCW(0.5, 0.5, 0.3, 0.3);
+
+    //Engine initialization
+    //VW Thing engine specs
+    //displacement = 1.584e-3; //engine displacement per cycle in cubic meters
+    n_rev = 2; //shaft revolutions per cycle (1 for 2-stroke, 2 for 4-stroke)
+    //r = 7.5; //Compression ratio
+    //idle_rpm = 700;
+    //max_rpm = 5000;
+
+    //Fuel properties
+    HV = 45e+6; //lower heating value of gasoline J/kg
+    AF = 14.7; //stochiometric fuel air ratio for gasoline
+
+    //SetCameraOffset(_V(-0.25, 1.0, 0.0));
+
+    SetMaxWheelbrakeForce(50);
+
+    MakeContact_TouchdownPoints();
+
+    //Screen message formatting
+    MakeAnnotation_Format();
+
+    MakeAnim_RightFrontWheel();
+    //MakeAnim_LeftFrontWheel();
+    //MakeAnim_RightRearWheel();
+    //MakeAnim_LeftRearWheel();
+
+    MakeLightHeadlights();
+    MakeLightBackuplights();
+    MakeLightTaillights();
 
     static PARTICLESTREAMSPEC wheel_trails = {
         0, 0.5, 5, 10, 0.03, 5, 1, 3.0, 
@@ -663,7 +664,7 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 		PARTICLESTREAMSPEC::ATM_PLIN, 
     };
 
-    AddParticleStream(&wheel_trails, front_left_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
+	AddParticleStream(&wheel_trails, front_left_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
 
     AddParticleStream(&wheel_trails, front_right_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
 
@@ -671,53 +672,54 @@ void UCFO::clbkSetClassCaps(FILEHANDLE cfg){
 
     AddParticleStream(&wheel_trails, rear_right_wheel_pos, BACKWARD_DIRECTION, &lvlwheeltrails);
 
-    //Light locations and specifications
 
-    MakeLightsHeadlights();
-    MakeLightsTaillights();
-    MakeLightsBackuplights();
+    //UACS support... Yay!
 
-    MakeAnim_RightFrontWheel();
-    MakeAnim_LeftFrontWheel();
-    MakeAnim_RightRearWheel();
-    MakeAnim_LeftRearWheel();
+    UACS::AirlockInfo airInfo;
 
-    //Screen message formatting
-    MakeAnnotation_Format();
-    
-}
+    airInfo.name = "CarDoor";
+    airInfo.pos = ExitPosition1;
+    airInfo.dir = FORWARD_DIRECTION;
+    airInfo.rot = _V(-1, 0, 0);
+    airInfo.hDock = CreateDock(ExitPosition1, FORWARD_DIRECTION, _V(-1, 0, 0));
+    airInfo.gndInfo.pos = std::nullopt;
 
-double UCFO::UpdateLvlWheelsTrails(){
+    vslAstrInfo.airlocks.push_back(airInfo);
+    vslAstrInfo.stations.emplace_back("Pilot");
 
-    double speed = GetGroundspeed();
+    CargoSlotPos.y += 1.3;
 
+    UACS::SlotInfo slotInfo;
+    slotInfo.hAttach = CreateAttachment(false, CargoSlotPos, _V(0, 1, 0), _V(0, 0, 1), "UACS");
+    slotInfo.holdDir = _V(0, -1, 0);
+    slotInfo.relVel = 0.05;
+    slotInfo.gndInfo.pos = std::nullopt;
+    vslCargoInfo.slots.push_back(slotInfo);
 
-    if((GroundContact()) && (speed > 10.0)){
-
-        return 1.0;
-
-    } else {
-
-        return 0.0;
-
-    }
 
 }
 
 void UCFO::clbkPostCreation(){
 
-    GetWeightVector(max_weight_vector);
-    max_weight = length(max_weight_vector);
+    uacs.clbkPostCreation();
 
-    wheel_base = front_right_wheel_contact.z - rear_right_wheel_contact.x;
+    //Following is needed to allow the suspension to be set and tuned to the correct height independent of the planetary body it is on.
+    wheel_base = front_right_wheel_contact.z - rear_right_wheel_contact.z;
 
     wheel_track = front_right_wheel_contact.x - front_left_wheel_contact.x;
 
-    max_weight_front = max_weight * (-rear_right_wheel_contact.z / wheel_base); //Weight supported by two front wheells.
-    max_weight_rear = max_weight - max_weight_front; //Weight supported by two rear wheels.
+    GetWeightVector(wv);
 
-    SetContact_TouchdownPoints();
+    max_weight = length(wv);
 
+    max_weight_front = max_weight * (-rear_right_wheel_contact.z / wheel_base); // weight supported by two front wheels.
+
+    max_weight_rear = max_weight - max_weight_front; //weight supported by two rear wheels.
+
+    SetContact_TouchdownPoints(pBrake);
+
+    SetEmptyMass(GetEmptyMass() + uacs.GetTotalAstrMass());
+    
 }
 
 void UCFO::clbkPreStep(double simt, double simdt, double mjd){
@@ -725,28 +727,34 @@ void UCFO::clbkPreStep(double simt, double simdt, double mjd){
     SetFeature_Caster();
     SetFeature_Ackermann();
     SetFeature_Brakes();
-    SetEngine_Power();
 
-    //Determine strut travel for animations and to calculate normal contact forces on all wheels
+        
+
+    SetEngine_Power();
+    
+
     pitch = GetPitch();
-    yaw = 0; //does not affect strut travel
+    yaw = 0.0;
     bank = GetBank();
     GetGroundspeedVector(FRAME_LOCAL, vel);
-    GetAngularVel(angvel);
-    omega = {x = 0, angvel.y, z = 0};
-    mass = empty_mass + GetPropellantMass(Fuel);
+    VECTOR3 avel = _V(0, 0, 0);
+    GetAngularVel(avel);
+    omega = {0, avel.y, 0};
+    mass = empty_mass + GetPropellantMass(main_fuel_tank);
 
-    //Get normal force on wheels for friction calculations
+    //get normal force on wheels for friction calculations
 
     GetHelp_NormalForce();
 
-    //Get direction of wheel axes for steering force directions
+    //get direction of wheel axes for steering force directions
 
     GetHelp_WheelAxis();
 
-    //Get wheel velocity relative to ground for friction vector
+    //get wheel velocity relative to ground for friction vector
 
     GetHelp_WheelVelocity(vel, omega);
+
+    //Calculate dynamic and static friction forces on wheels
 
     GetHelp_DynamicFriction();
     GetHelp_StaticFriction();
@@ -755,43 +763,48 @@ void UCFO::clbkPreStep(double simt, double simdt, double mjd){
 
     GetHelp_StickOrSkid();
 
-    //Update animations and lights
+    SetAnnotation_Messages();
 
-    SetAnim_LeftFrontWheel();
     SetAnim_RightFrontWheel();
-    SetAnim_LeftRearWheel();
+    SetAnim_LeftFrontWheel();
     SetAnim_RightRearWheel();
+    SetAnim_LeftRearWheel();
+
+    lvlwheeltrails = UpdateLvlWheelsTrails();
 
     SetLightHeadlights();
     SetLightBrakelights();
     SetLightBackuplights();
 
-    SetAnnotation_Messages();
+    if(astrHUD.timer < 5) astrHUD.timer += simdt;
+
+    if(cargoHUD.timer < 5) cargoHUD.timer += simdt;
 
 }
 
-void UCFO::clbkPostStep(double simt, double simdt, double mjd){
+int UCFO::clbkConsumeDirectKey(char *kstate){
 
-    lvlwheeltrails = UpdateLvlWheelsTrails();
+    if(KEYDOWN(kstate, OAPI_KEY_SPACE)){
+        
+        brake_status = 'N';
 
-    
-}
-
-void UCFO::clbkLoadStateEx(FILEHANDLE scn, void *vs){
-
-    char *line;
-
-    while(oapiReadScenario_nextline(scn, line)){
-        ParseScenarioLineEx(line, vs);
+    } else {
+        brake_status = 'F';
     }
 
-}
+    if(KEYDOWN(kstate, OAPI_KEY_NUMPAD1)){
 
-void UCFO::clbkSaveState(FILEHANDLE scn){
+        steering_angle = max(steering_angle - 5 * RAD, -1.0);
 
-    char cbuf[256];
+    }
 
-    SaveDefaultState(scn);
+    if(KEYDOWN(kstate, OAPI_KEY_NUMPAD3)){
+        
+        steering_angle = min(steering_angle + 5 * RAD, 1.0);
+        
+    }
+
+    return 0;
 }
 
 int UCFO::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate){
@@ -831,91 +844,533 @@ int UCFO::clbkConsumeBufferedKey(DWORD key, bool down, char *kstate){
 
     }
 
+    if(key == OAPI_KEY_L && down){
+
+        if(headlight_status == 'N'){
+
+            headlight_status = 'F';
+        } else if (headlight_status == 'F'){
+
+            headlight_status = 'N';
+        }
+        
+    }
+
+    if(key == OAPI_KEY_F && down){
+
+        SetCameraOffset(camera_pos);
+
+    }
+
+    if(key == OAPI_KEY_V && down){
+
+        VECTOR3 front_left_wheel_pos_aux = _V(front_left_wheel_pos.x-1.75, front_left_wheel_pos.y, front_left_wheel_pos.z-2.75);
+
+        SetCameraOffset(front_left_wheel_pos_aux);
+
+    }
+
+    if(key == OAPI_KEY_NUMPADENTER && down){
+
+        if(pBrake == false){
+            pBrake = true;
+            SetThrusterGroupLevel(THGROUP_MAIN, 0);
+            SetContact_TouchdownPoints(pBrake);
+            SetWheelbrakeLevel(1, 0, true);
+        } else {
+            pBrake = false;
+            SetContact_TouchdownPoints(pBrake);
+            SetWheelbrakeLevel(0, 0, true);
+        }
+
+    }
+
+    if(KEYMOD_ALT(kstate) && key == OAPI_KEY_M){
+        hudMode < 2 ? hudMode++ : hudMode = 0;
+        return 1;
+    } else if(hudMode != HUD_OP) return 0;
+
+    if(KEYMOD_ALT(kstate)){
+        
+        switch(key){
+
+            case OAPI_KEY_NUMPAD8:
+                astrHUD.idx + 1 < uacs.GetAvailAstrCount() ? ++astrHUD.idx : astrHUD.idx = 0;
+                return 1;
+
+            case OAPI_KEY_NUMPAD2:
+                astrHUD.idx > 0 ? --astrHUD.idx : astrHUD.idx = uacs.GetAvailAstrCount() - 1;
+                return 1;
+            
+            case OAPI_KEY_NUMPAD6:
+                cargoHUD.idx + 1 < uacs.GetAvailCargoCount() ? ++cargoHUD.idx : cargoHUD.idx = 0;
+                return 1;
+            
+            case OAPI_KEY_NUMPAD4:
+                cargoHUD.idx > 0 ? --cargoHUD.idx : cargoHUD.idx = uacs.GetAvailCargoCount() - 1;
+                return 1;
+        }
+
+    }
+
+    if(KEYMOD_RALT(kstate)){
+
+        switch(key){
+
+            case OAPI_KEY_A:
+                
+                switch(uacs.AddAstronaut(astrHUD.idx)){
+
+                    case UACS::INGRS_SUCCED : 
+                        astrHUD.msg = "Success: Selected astronaut added.";
+                        break;
+                    
+                        case UACS::INGRS_STN_OCCP : 
+                            astrHUD.msg = "Error: Station occupied.";
+                            break;
+                        
+                        case UACS::INGRS_FAIL : 
+                            astrHUD.msg = "Error: The addition failed.";
+                            break;
+                }
+
+                astrHUD.timer = 0;
+                return 1;
+
+            case OAPI_KEY_E:{
+                
+                switch(uacs.EgressAstronaut()){
+
+                    case UACS::EGRS_SUCCED:
+                        astrHUD.msg = "Success: Astronaut egressed.";
+                        break;
+                    
+                    case UACS::EGRS_STN_EMPTY:
+					    astrHUD.msg = "Error: No astronaut onboard.";
+						break;
+
+                    case UACS::EGRS_ARLCK_DCKD:
+						astrHUD.msg = "Error: Airlock blocked by a docked vessel.";
+						break;
+
+					case UACS::EGRS_NO_EMPTY_POS:
+						astrHUD.msg = "Error: No empty position nearby.";
+						break;
+
+					case UACS::EGRS_INFO_NOT_SET:
+						astrHUD.msg = "Error: Astronaut egressed but info not set.";
+						break;
+
+					case UACS::EGRS_FAIL:
+						astrHUD.msg = "Error: The egress failed.";
+						break;
+                }
+
+                astrHUD.timer = 0;
+                return 1;
+
+            }
+
+            case OAPI_KEY_D:
+                if(const auto &astrInfo = vslAstrInfo.stations.front().astrInfo){
+
+                    SetEmptyMass(GetEmptyMass() - astrInfo->mass);
+                    vslAstrInfo.stations.front() = {};
+                    astrHUD.msg = "Success: Astronaut deleted.";
+                } else {
+                    astrHUD.msg = "Error: No astronaut onboard.";
+
+                    astrHUD.timer = 0;
+                    return 1;
+                }
+
+        }
+
+    } else if(KEYMOD_LALT(kstate)){
+
+        switch(key){
+
+            case OAPI_KEY_A:
+
+                switch(uacs.AddCargo(cargoHUD.idx)){
+
+                    case UACS::GRPL_SUCCED:
+                        cargoHUD.msg = "Success: Selected cargo added.";
+                        break;
+                    
+                    case UACS::GRPL_SLT_OCCP:
+						cargoHUD.msg = "Error: Slot occupied.";
+						break;
+
+					case UACS::GRPL_FAIL:
+						cargoHUD.msg = "Error: The addition failed.";
+						break;
+
+                }
+                cargoHUD.timer = 0;
+                return 1;
+            
+            case OAPI_KEY_G:
+
+                switch(uacs.GrappleCargo()){
+
+                    case UACS::GRPL_SUCCED:
+						cargoHUD.msg = "Success: Nearest cargo grappled.";
+						break;
+
+					case UACS::GRPL_SLT_OCCP:
+						cargoHUD.msg = "Error: Slot occupied.";
+						break;
+
+					case UACS::GRPL_NOT_IN_RNG:
+						cargoHUD.msg = "Error: No grappleable cargo in range.";
+						break;
+
+					case UACS::GRPL_FAIL:
+						cargoHUD.msg = "Error: The grapple failed.";
+						break;
+                }
+                cargoHUD.timer = 0;
+				return 1;
+            
+            case OAPI_KEY_R:
+                
+                switch(uacs.ReleaseCargo()){
+                    case UACS::RLES_SUCCED:
+						cargoHUD.msg = "Success: Cargo released.";
+						break;
+
+					case UACS::RLES_SLT_EMPTY:
+						cargoHUD.msg = "Error: Slot empty.";
+						break;
+
+					case UACS::RLES_NO_EMPTY_POS:
+						cargoHUD.msg = "Error: No empty position nearby.";
+						break;
+
+					case UACS::RLES_FAIL:
+						cargoHUD.msg = "Error: The release failed.";
+						break;
+					}
+
+                    cargoHUD.timer = 0;
+					return 1;
+
+                case OAPI_KEY_P:
+                    
+                    switch(uacs.PackCargo()){
+                        case UACS::PACK_SUCCED:
+						cargoHUD.msg = "Success: Nearest cargo packed.";
+						break;
+
+					case UACS::PACK_NOT_IN_RNG:
+						cargoHUD.msg = "Error: No packable cargo in range.";
+						break;
+
+					case UACS::PACK_FAIL:
+						cargoHUD.msg = "Error: The packing failed.";
+						break;
+                    }
+                    
+                    cargoHUD.timer = 0;
+                    return 1;
+
+                case OAPI_KEY_U:
+                    
+                    switch(uacs.UnpackCargo()) {
+                        case UACS::PACK_SUCCED:
+						cargoHUD.msg = "Success: Nearest cargo unpacked.";
+						break;
+
+					case UACS::PACK_NOT_IN_RNG:
+						cargoHUD.msg = "Error: No unpackable cargo in range.";
+						break;
+
+					case UACS::PACK_FAIL:
+						cargoHUD.msg = "Error: The unpacking failed.";
+						break;
+                    }
+
+                    cargoHUD.timer = 0;
+					return 1;
+
+                case OAPI_KEY_F:{
+
+                    double reqMass = GetMaxFuelMass() - GetFuelMass();
+
+                    auto drainInfo = uacs.DrainGrappledResource("fuel", reqMass);
+
+                    if (drainInfo.first != UACS::DRIN_SUCCED) drainInfo = uacs.DrainScenarioResource("fuel", reqMass);
+
+					if (drainInfo.first != UACS::DRIN_SUCCED) drainInfo = uacs.DrainStationResource("fuel", reqMass);
+
+                    switch (drainInfo.first)
+					{
+					case UACS::DRIN_SUCCED:
+						SetFuelMass(GetFuelMass() + drainInfo.second);
+						cargoHUD.msg = std::format("Success: {:g}kg drained.", drainInfo.second);
+						break;
+
+					case UACS::DRIN_NOT_IN_RNG:
+						cargoHUD.msg = "Error: No resource vessel grappled or in range.";;
+						break;
+
+					case UACS::DRIN_FAIL:
+						cargoHUD.msg = "Error: The drainage failed.";
+						break;
+					}
+                    
+                    cargoHUD.timer = 0;
+					return 1;
+
+                }
+            case OAPI_KEY_D:
+                
+                switch(uacs.DeleteCargo()) {
+                    case UACS::RLES_SUCCED:
+						cargoHUD.msg = "Success: Cargo deleted.";
+						break;
+
+					case UACS::RLES_SLT_EMPTY:
+						cargoHUD.msg = "Error: Slot empty.";
+						break;
+
+					case UACS::RLES_FAIL:
+						cargoHUD.msg = "Error: The deletion failed.";
+						break;
+                    
+                    default: break;
+                }
+
+                cargoHUD.timer = 0;
+                return 1;
+            }
+    }
 
     return 0;
 }
 
-int UCFO::clbkConsumeDirectKey(char *kstate){
+void UCFO::clbkLoadStateEx(FILEHANDLE scn, void *status){
 
-    if(KEYDOWN(kstate, OAPI_KEY_SPACE)){
-        
-        brake_status = 'N';
+    char *line;
 
-    } else {
-        brake_status = 'F';
+    while(oapiReadScenario_nextline(scn, line)){
+        if(!uacs.ParseScenarioLine(line)){
+            ParseScenarioLineEx(line, status);
+        }
     }
+}
 
-    if(KEYDOWN(kstate, OAPI_KEY_NUMPAD1)){
+void UCFO::clbkSaveState(FILEHANDLE scn){
 
-        steering_angle = std::max(steering_angle - 0.05 * RAD, -1.0);
+    VESSEL4::clbkSaveState(scn);
 
-    }
+    uacs.clbkSaveState(scn);
 
-    if(KEYDOWN(kstate, OAPI_KEY_NUMPAD3)){
+}
+
+int UCFO::clbkGeneric(int msgid, int prm, void *context){
+
+    if(msgid == UACS::MSG){
         
-        steering_angle = std::min(steering_angle + 0.05 * RAD, 1.0);
-        
+        switch(prm){
+
+            case UACS::ASTR_INGRS:{
+
+                auto astrIdx = *static_cast<size_t*>(context);
+                auto &astrInfo = vslAstrInfo.stations.at(astrIdx).astrInfo;
+
+                SetEmptyMass(GetEmptyMass() + astrInfo->mass);
+                return 1;
+            }
+
+            case UACS::ASTR_EGRS:{
+
+                auto astrIdx = *static_cast<size_t*>(context);
+                auto &astrInfo = vslAstrInfo.stations.at(astrIdx).astrInfo;
+
+                SetEmptyMass(GetEmptyMass() - astrInfo->mass);
+                return 1;
+
+            }
+
+            default:
+                return 0;
+            
+        }
     }
 
     return 0;
 }
 
-void UCFO::SetLightHeadlights(){
+bool UCFO::clbkDrawHUD(int mode, const HUDPAINTSPEC *hps, oapi::Sketchpad *skp){
 
-    if(headlight_status == 'N'){
+    VESSEL4::clbkDrawHUD(mode, hps, skp);
 
-        left_headlight->Activate(true);
-        right_headlight->Activate(true);
+    int x = HIWORD(skp->GetCharSize());
+	int rightX = hps->W - x;
+	int startY = int(0.215 * hps->H);
+	int y = startY;
 
-        left_headlight_beacon_spec.active = true;
-        right_headlight_beacon_spec.active = true;
+    int space = LOWORD(skp->GetCharSize());
+    int largeSpace = int(1.5 * space);
 
-    } else {
+    if(hudMode == UCFO::HUD_OP){
 
-        left_headlight->Activate(false);
-        right_headlight->Activate(false);
+        buffer = std::format("Selected available cargo: {}", uacs.GetAvailCargoName(cargoHUD.idx));
+        skp->Text(x, y, buffer.c_str(), buffer.size());
 
-        left_headlight_beacon_spec.active = false;
-        right_headlight_beacon_spec.active = false;
+        if(cargoHUD.timer < 5){
+            y += largeSpace;
+            skp->Text(x, y, cargoHUD.msg
+                .c_str(), cargoHUD.msg.size());
+        }
 
+        if(const auto &info = vslCargoInfo.slots.front().cargoInfo){
+
+            const auto &cargoInfo = *info;
+
+            y += largeSpace;
+            skp->Text(x, y, "Grappled cargo information", 26);
+            y += largeSpace;
+
+            buffer = std::format("Name: {}", oapiGetVesselInterface(cargoInfo.handle)->GetName());
+
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+
+            y += space;
+
+            buffer = std::format("Mass: {:g}kg", oapiGetMass(cargoInfo.handle));
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+
+            y += space;
+
+            switch(cargoInfo.type){
+
+                case UACS::STATIC:
+                    skp->Text(x, y, "Type: Static", 12);
+                    break;
+                
+                case UACS::UNPACKABLE:
+                    if(cargoInfo.unpackOnly){
+                        skp->Text(x, y, "Type: Unpackable only", 21);
+                    } else {
+                        skp->Text(x, y, "Type: Unpackable", 16);
+                    }
+                    
+                    y += space;
+
+                    buffer = std::format("Breathable: {}", cargoInfo.breathable ? "Yes" : "No" );
+                    skp->Text(x, y, buffer.c_str(), buffer.size());
+
+                    break;
+                
+            }
+
+            if(cargoInfo.resource){
+                y += space;
+
+                buffer = *cargoInfo.resource;
+                buffer[0] = std::toupper(buffer[0]);
+
+                buffer = std::format("Resource: {}", buffer);
+
+                skp->Text(x, y, buffer.c_str(), buffer.size());
+            }
+
+        }
+
+        x = rightX;
+        y = startY;
+        skp->SetTextAlign(oapi::Sketchpad::RIGHT);
+
+        buffer = std::format("Selected available astronaut: {}", uacs.GetAvailAstrName(astrHUD.idx));
+        skp->Text(x, y, buffer.c_str(), buffer.size());
+
+        if(astrHUD.timer < 5){
+            y += largeSpace;
+            skp->Text(x, y, astrHUD.msg.c_str(), astrHUD.msg.size());
+        }
+
+        if(const auto &info = vslAstrInfo.stations.front().astrInfo){
+            const auto &astrInfo = *info;
+
+            y += largeSpace;
+            skp->Text(x, y, "Onboard astronaut information", 29);
+            y += largeSpace;
+
+            buffer = std::format("Name: {}", astrInfo.name);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = astrInfo.role;
+            buffer[0] = std::toupper(buffer[0]);
+
+            buffer = std::format("Role: {}", buffer);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = std::format("Mass: {:g}kg", astrInfo.mass);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += largeSpace;
+
+            buffer = std::format("Fuel: {:g}%", astrInfo.fuelLvl * 100);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = std::format("Oxygen: {:g}%", astrInfo.oxyLvl * 100);
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+            y += space;
+
+            buffer = std::format("Alive: {}", astrInfo.alive ? "Yes" : "No");
+            skp->Text(x, y, buffer.c_str(), buffer.size());
+        }
+
+    } else if(hudMode == HUD_SRT){
+
+        skp->Text(x, y, "Alt + M: Cycle between custom HUD modes", 39);
+        y += largeSpace;
+
+        skp->Text(x, y, "Alt + Numpad 6/4: Select next/previous available cargo", 54);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + A: Add selected cargo", 32);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + G: Grapple nearest cargo", 35);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + R: Release grappled cargo", 36);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + P: Pack nearest packable cargo", 41);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + U: Unpack nearest unpackable cargo", 45);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + F: Drain resource from nearest source", 48);
+		y += space;
+
+		skp->Text(x, y, "Left Alt + D: Delete grappled cargo", 35);
+
+	    x = rightX;
+		y = startY;
+		skp->SetTextAlign(oapi::Sketchpad::RIGHT);
+
+		skp->Text(x, y, "Alt + Numpad 8/2: Select next/previous available astronaut", 58);
+		y += space;
+
+		skp->Text(x, y, "Right Alt + A: Add selected astronaut", 37);
+		y += space;
+
+		skp->Text(x, y, "Right Alt + E: Egress onboard astronaut", 39);
+		y += space;
+
+		skp->Text(x, y, "Right Alt + D: Delete onboard astronaut", 39);
     }
 
-}
-
-void UCFO::SetLightBrakelights(){
-
-    if(brake_status == 'N'){
-
-        left_tail_light_point->Activate(true);
-        right_tail_light_point->Activate(true);
-        
-        left_tail_light_spec.active = true;
-        right_tail_light_spec.active = true;
-
-    } else {
-
-        left_tail_light_point->Activate(false);
-        right_tail_light_point->Activate(false);
-
-        left_tail_light_spec.active = false;
-        right_tail_light_spec.active = false;
-    }
-
-}
-
-void UCFO::SetLightBackuplights(){
-
-    if(drive_status == 'R'){
-
-        left_backup_light_spec.active = true;
-        right_backup_light_spec.active = true;
-
-    } else {
-
-        left_backup_light_spec.active = false;
-        right_backup_light_spec.active = false;
-
-    }
+    return true;
 
 }
 

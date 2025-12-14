@@ -1,10 +1,10 @@
 #include "main.hpp"
 
-void UCFO::MakeAnim_RightFrontWheel() {
-    
-    right_front_wheel_rotate = new MGROUP_ROTATE(
+void UCFO::MakeAnim_RightFrontWheel(){
+
+    static MGROUP_ROTATE right_front_wheel_rotate(
         uimesh_UCFO,
-        (unsigned int *)front_right_wheel_id,
+        &front_right_wheel_id,
         1,
         front_right_wheel_pos,
         _V(1, 0, 0),
@@ -12,73 +12,16 @@ void UCFO::MakeAnim_RightFrontWheel() {
     );
 
     anim_right_front_wheel_rotation = CreateAnimation(0.0);
-    ANIMATIONCOMPONENT_HANDLE parent = AddAnimationComponent(anim_right_front_wheel_rotation, 0, 1, right_front_wheel_rotate);
 
-    right_front_wheel_travel = new MGROUP_TRANSLATE(
-        uimesh_UCFO,
-        (unsigned int *)front_right_wheel_id,
-        1,
-        _V(0, 2.0 * travel, 0)
-    );
-
-    anim_right_front_wheel_travel = CreateAnimation(0.5);
-     AddAnimationComponent(anim_right_front_wheel_travel, 0, 1, right_front_wheel_travel, parent);
-
-    right_front_wheel_steer = new MGROUP_ROTATE(
-        uimesh_UCFO,
-        (unsigned int *)front_right_wheel_id,
-        1,
-        front_right_wheel_pos,
-        _V(0, 1, 0),
-        (float)(45 * RAD)
-    );
-
-    anim_right_front_wheel_steer = CreateAnimation(0.5);
-    AddAnimationComponent(anim_right_front_wheel_steer, 0, 1, right_front_wheel_steer, parent);    
+    AddAnimationComponent(anim_right_front_wheel_rotation, 0, 1, &right_front_wheel_rotate);
+     
 }
 
-void UCFO::MakeAnim_LeftFrontWheel() {
+void UCFO::MakeAnim_RightRearWheel(){
     
-    left_front_wheel_rotate = new MGROUP_ROTATE(
+    static MGROUP_ROTATE right_rear_wheel_rotate(
         uimesh_UCFO,
-        (unsigned int *)front_left_wheel_id,
-        1,
-        front_left_wheel_pos,
-        _V(1, 0, 0),
-        (float)(360 * RAD)
-    );
-
-    anim_left_front_wheel_rotation = CreateAnimation(0.0);
-    ANIMATIONCOMPONENT_HANDLE parent = AddAnimationComponent(anim_left_front_wheel_rotation, 0, 1, left_front_wheel_rotate);
-
-    left_front_wheel_travel = new MGROUP_TRANSLATE(
-        uimesh_UCFO,
-        (unsigned int *)front_left_wheel_id,
-        1,
-        _V(0, 2.0 * travel, 0)
-    );
-
-    anim_left_front_wheel_travel = CreateAnimation(0.5);
-     AddAnimationComponent(anim_left_front_wheel_travel, 0, 1, left_front_wheel_travel, parent);
-
-    left_front_wheel_steer = new MGROUP_ROTATE(
-        uimesh_UCFO,
-        (unsigned int *)front_left_wheel_id,
-        1,
-        front_left_wheel_pos,
-        _V(0, 1, 0),
-        (float)(45 * RAD)
-    );
-
-    anim_left_front_wheel_steer = CreateAnimation(0.5);
-    AddAnimationComponent(anim_left_front_wheel_steer, 0, 1, left_front_wheel_steer, parent);    
-}
-
-void UCFO::MakeAnim_RightRearWheel() {
-    
-    right_rear_wheel_rotate = new MGROUP_ROTATE(
-        uimesh_UCFO,
-        (unsigned int *)rear_right_wheel_id,
+        &rear_right_wheel_id,
         1,
         rear_right_wheel_pos,
         _V(1, 0, 0),
@@ -86,25 +29,16 @@ void UCFO::MakeAnim_RightRearWheel() {
     );
 
     anim_right_rear_wheel_rotation = CreateAnimation(0.0);
-    ANIMATIONCOMPONENT_HANDLE parent = AddAnimationComponent(anim_right_rear_wheel_rotation, 0, 1, right_rear_wheel_rotate);
 
-    right_rear_wheel_travel = new MGROUP_TRANSLATE(
-        uimesh_UCFO,
-        (unsigned int *)rear_right_wheel_id,
-        1,
-        _V(0, 2.0 * travel, 0)
-    );
-
-    anim_right_rear_wheel_travel = CreateAnimation(0.5);
-     AddAnimationComponent(anim_right_rear_wheel_travel, 0, 1, right_rear_wheel_travel, parent);
+    AddAnimationComponent(anim_right_rear_wheel_rotation, 0, 1, &right_rear_wheel_rotate);
    
 }
 
 void UCFO::MakeAnim_LeftRearWheel() {
     
-    left_rear_wheel_rotate = new MGROUP_ROTATE(
+    static MGROUP_ROTATE left_rear_wheel_rotate(
         uimesh_UCFO,
-        (unsigned int *)rear_left_wheel_id,
+        &rear_left_wheel_id,
         1,
         rear_left_wheel_pos,
         _V(1, 0, 0),
@@ -112,16 +46,24 @@ void UCFO::MakeAnim_LeftRearWheel() {
     );
 
     anim_left_rear_wheel_rotation = CreateAnimation(0.0);
-    ANIMATIONCOMPONENT_HANDLE parent = AddAnimationComponent(anim_left_rear_wheel_rotation, 0, 1, left_rear_wheel_rotate);
 
-    left_rear_wheel_travel = new MGROUP_TRANSLATE(
+    AddAnimationComponent(anim_left_rear_wheel_rotation, 0, 1, &left_rear_wheel_rotate);
+   
+}
+
+void UCFO::MakeAnim_LeftFrontWheel() {
+
+    static MGROUP_ROTATE left_front_wheel_rotate(
         uimesh_UCFO,
-        (unsigned int *)rear_left_wheel_id,
+        &front_left_wheel_id,
         1,
-        _V(0, 2.0 * travel, 0)
+        front_left_wheel_pos,
+        _V(1, 0, 0),
+        (float)(360 * RAD)
     );
 
-    anim_left_rear_wheel_travel = CreateAnimation(0.5);
-     AddAnimationComponent(anim_left_rear_wheel_travel, 0, 1, left_rear_wheel_travel, parent);
-   
+    anim_left_front_wheel_rotation = CreateAnimation(0.0);
+
+    AddAnimationComponent(anim_left_front_wheel_rotation, 0, 1, &left_front_wheel_rotate);
+    
 }

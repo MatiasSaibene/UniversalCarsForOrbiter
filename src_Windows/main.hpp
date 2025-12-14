@@ -12,14 +12,11 @@
 #include <cstddef>
 #include <string>
 
-#define HIWORD(l) ((uint16_t)((((uint32_t)(l)) >> 16) & 0xFFFF))
-#define LOWORD(l) ((uint16_t)((uint32_t)(l) & 0xFFFF))
-
 #include <sys/types.h>
 #include <cstring>
 #include <cstdio>
-#include "HEADERS//Orbitersdk.h"
-#include "HEADERS//UACS//Module.h"
+#include "../../../include/Orbitersdk.h"
+#include "../../../include/UACS/Module.h"
 
 const VECTOR3 FORWARD_DIRECTION = {0, 0, 1};
 
@@ -80,7 +77,7 @@ class UCFO : public VESSEL4{
         void clbkSetClassCaps(FILEHANDLE cfg) override;
         void clbkPostCreation() override;
         void clbkPreStep(double, double, double) override;
-        int clbkConsumeBufferedKey(int, bool, char *) override;
+        int clbkConsumeBufferedKey(DWORD, bool, char *) override;
         int clbkConsumeDirectKey(char *) override;
         void clbkLoadStateEx(FILEHANDLE scn, void *status) override;
         void clbkSaveState(FILEHANDLE scn) override;
